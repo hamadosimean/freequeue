@@ -1,0 +1,165 @@
+import uuid
+from django.db import models
+from django.contrib.auth.models import (
+    BaseUserManager,
+    PermissionsMixin,
+    AbstractUser,
+)
+from django.utils import timezone
+from general_settings.constants import OTP_EXPIRATION_MINUTES
+from general_settings.utils import TimeStampedModel
+from django.utils.translation import gettext_lazy as _
+
+
+# Create your models here.
+class UserManager(BaseUserManager):
+    def create_user(self, phone_number, password=None, **extra_fields):
+        """
+        Create and save a user with the given phone_number and password.
+        """
+        if not phone_number:
+            raise ValueError(_("Users must have a phone number"))
+        user = self.model(phone_number=phone_number, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, phone_number, password=None, **extra_fields):
+        """
+        Create and save a superuser with the given phone_number and password.
+        """
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
+
+        return self.create_user(phone_number, password, **extra_fields)
+
+
+class CustomUser(AbstractUser, PermissionsMixin):
+    """
+    Custom user model that extends AbstractBaseUser and PermissionsMixin.
+    Uses phone_number as the unique identifier instead of username.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    country_code = models.CharField(
+        max_length=5,
+        default="+226",
+        verbose_name=_("Code pays"),
+        help_text=_("Code pays de l'utilisateur"),
+    )
+    phone_number = models.CharField(
+        max_length=20,
+        unique=True,
+        verbose_name=_("Numéro de téléphone"),
+        help_text=_("Numéro de téléphone unique de l'utilisateur"),
+    )
+    email = models.EmailField(
+        max_length=254,
+        blank=True,
+        null=True,
+        verbose_name=_("Email"),
+        help_text=_("Adresse email de l'utilisateur (optionnel)"),
+    )
+
+    USERNAME_FIELD = "phone_number"
+    REQUIRED_FIELDS = []
+
+    objects = UserManager()
+
+    def __str__(self):
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name} - {self.phone_number}"
+        return self.phone_number
+
+    def get_full_name(self):
+        """Return the first_name plus the last_name, with a space in between."""
+        full_name = f"{self.first_name} {self.last_name}".strip()
+        return full_name or self.phone_number
+
+    def get_short_name(self):
+        """Return the short name for the user."""
+        return self.first_name or self.phone_number
+
+    class Meta:
+        verbose_name = _("Utilisateur")
+        verbose_name_plural = _("Utilisateurs")
+        indexes = [
+            models.Index(fields=["phone_number"]),
+            models.Index(fields=["email"]),
+            models.Index(fields=["country_code"]),
+            models.Index(fields=["is_active"]),
+        ]
+
+
+class OTP(TimeStampedModel):
+    """
+    Model for phone OTP (One-Time Password) verification.
+    Includes security features like expiration, attempt limits, and account locking.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name="otp",
+        verbose_name=_("Utilisateur"),
+    )
+    code = models.TextField(
+        verbose_name=_("Code OTP"),
+        db_index=True,
+        help_text=_("Code OTP envoyé au numéro de téléphone"),
+    )
+    max_attempts = models.IntegerField(
+        default=0,
+        verbose_name=_("Tentatives"),
+        help_text=_("Nombre de tentatives de vérification"),
+    )
+    locked_until = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_("Verrouillé jusqu'à"),
+        help_text=_("Date jusqu'à laquelle le compte est verrouillé"),
+    )
+    used_at = models.DateTimeField(null=True, blank=True, verbose_name=_("Utilisé le"))
+    is_verified = models.BooleanField(
+        default=False,
+        verbose_name=_("OTP vérifié"),
+        db_index=True,
+        help_text=_("Indique si l'OTP a été vérifié"),
+    )
+
+    def is_expired(self):
+        """Check if OTP has expired."""
+        return (
+            self.updated_at + timezone.timedelta(minutes=OTP_EXPIRATION_MINUTES)
+            < timezone.now()
+        )
+
+    def is_locked(self):
+        """Check if OTP attempts are locked."""
+        if self.locked_until and self.locked_until > timezone.now():
+            return True
+        return False
+
+    def __str__(self):
+        return f"{self.user.phone_number} - OTP: {'*' * 4}{self.code[-2:]}"
+
+    class Meta:
+        verbose_name = _("OTP")
+        verbose_name_plural = _("OTPs")
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "is_verified"]),
+            models.Index(fields=["created_at"]),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(max_attempts__gte=0), name="max_attempts_non_negative"
+            ),
+            models.UniqueConstraint(
+                fields=["user"],
+                condition=models.Q(is_verified=False),
+                name="one_active_otp_per_user",
+            ),
+        ]

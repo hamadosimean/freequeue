@@ -1,0 +1,28 @@
+FROM python:3.13-slim
+
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /app
+
+# System dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gdal-bin libgdal-dev binutils libproj-dev curl procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install dependencies (Cached layer)
+
+COPY requirements.txt .
+RUN uv pip install --system --no-cache -r requirements.txt
+
+# Copy application code
+COPY . .
+
+ENTRYPOINT ["./entrypoint.sh"]
+EXPOSE 8000
