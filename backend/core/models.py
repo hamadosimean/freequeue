@@ -20,7 +20,7 @@ User = get_user_model()
 # ======================================
 class Company(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="company")
     name = models.CharField(max_length=100)
     domain = models.CharField(max_length=100, choices=COMPANY_DOMAINS, default="other")
     description = models.TextField(blank=True, null=True)
@@ -49,7 +49,9 @@ class Company(TimeStampedModel):
 # ======================================
 class Branch(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="branch"
+    )
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
@@ -82,8 +84,8 @@ class Branch(TimeStampedModel):
 # =============================================
 class Payment(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="payment")
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default="pending")
     transaction_id = models.CharField(max_length=100)
     payment_method = models.CharField(
@@ -101,6 +103,16 @@ class Payment(TimeStampedModel):
             models.Index(fields=["status"]),
             models.Index(fields=["branch"]),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["branch", "transaction_id"],
+                name="unique_transaction",
+            ),
+            models.CheckConstraint(
+                check=models.Q(amount__gte=0),
+                name="amount_gte_0",
+            ),
+        ]
 
 
 # =======================================
@@ -108,13 +120,14 @@ class Payment(TimeStampedModel):
 # ========================================
 class BranchSettings(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="setting")
     is_voice_enabled = models.BooleanField(default=True)
     voice_style = models.CharField(
         max_length=20, choices=VOICE_STYLE, default="natural"
     )
     allow_remote = models.BooleanField(default=True)
     screen_mode = models.CharField(max_length=20, choices=SCREEN_MODE, default="dark")
+    show_info = models.BooleanField(default=True)
 
     def __str__(self):
         return self.branch.name + " - " + self.screen_mode
@@ -133,7 +146,7 @@ class BranchSettings(TimeStampedModel):
 # ======================================
 class BranchInfos(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="infos")
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
 
@@ -152,7 +165,7 @@ class BranchInfos(TimeStampedModel):
 
 class MarketingImage(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="image")
     image = models.ImageField(upload_to="marketing_images/")
     title = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
@@ -175,7 +188,7 @@ class MarketingImage(TimeStampedModel):
 # ===================================================
 class Video(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="video")
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     video = models.FileField(upload_to="videos/")
@@ -198,7 +211,7 @@ class Video(TimeStampedModel):
 # ===================================================
 class Service(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="service")
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     daily_limit = models.IntegerField(default=2000)
@@ -223,8 +236,8 @@ class Service(TimeStampedModel):
 # ========================================================
 class Queue(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="queue")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="queue")
     status = models.CharField(max_length=20, choices=QUEUE_STATUS, default="waiting")
     queue_number = models.IntegerField(default=1)
 

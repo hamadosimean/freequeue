@@ -46,6 +46,7 @@ class BranchSettingsAdmin(admin.ModelAdmin):
         "voice_style",
         "allow_remote",
         "screen_mode",
+        "show_info",
     ]
     list_filter = [
         "branch",
