@@ -164,3 +164,39 @@ class OTP(TimeStampedModel):
                 name="one_active_otp_per_user",
             ),
         ]
+
+
+class UserSettings(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name="user_settings",
+        verbose_name=_("Utilisateur"),
+    )
+    sms_notifications = models.BooleanField(
+        default=True,
+        verbose_name=_("Notifications SMS"),
+        help_text=_("Activate SMS notifications"),
+    )
+    email_notifications = models.BooleanField(
+        default=True,
+        verbose_name=_("Notifications Email"),
+        help_text=_("Activate email notifications"),
+    )
+    reminder_minutes = models.IntegerField(
+        default=15,
+        verbose_name=_("Minutes before reminder"),
+        help_text=_("Minutes before reminder"),
+    )
+
+    class Meta:
+        verbose_name = _("User settings")
+        verbose_name_plural = _("User settings")
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} - {self.user.email}"

@@ -11,15 +11,16 @@ from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 
 # local
-from .models import OTP, CustomUser
+from .models import OTP, CustomUser, UserSettings
 from .utils import send_otp
 from .serializers import (
     SendOTPSerializer,
     VerifyOTPSerializer,
+    UserSettingsSerializer,
 )
 from general_settings.throttles import OTPVerifyThrottle, OTPSendThrottle
 from general_settings.constants import OTP_MAX_ATTEMPTS
@@ -182,3 +183,45 @@ class VerifyOTPAPIView(APIView):
             return Response(
                 {"detail": _("Invalid OTP")}, status=status.HTTP_400_BAD_REQUEST
             )
+
+
+# =============================================
+# User settings views
+# =============================================
+
+
+class UserSettingsAPIView(APIView):
+    """
+    View to handle user settings.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user_settings = UserSettings.objects.filter(user=request.user).first()
+        if not user_settings:
+            user_settings = UserSettings.objects.create(user=request.user)
+        serializer = UserSettingsSerializer(user_settings)
+        return Response(serializer.data)
+
+    def put(self, request):
+        user_settings = UserSettings.objects.filter(user=request.user).first()
+        if not user_settings:
+            user_settings = UserSettings.objects.create(user=request.user)
+        serializer = UserSettingsSerializer(user_settings, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request):
+        user_settings = UserSettings.objects.filter(user=request.user).first()
+        if not user_settings:
+            user_settings = UserSettings.objects.create(user=request.user)
+        serializer = UserSettingsSerializer(
+            user_settings, data=request.data, partial=True
+        )
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

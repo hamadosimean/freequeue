@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from django.utils.translation import gettext_lazy as _
+from .models import UserSettings
 
 User = get_user_model()
 
@@ -74,3 +75,21 @@ class VerifyOTPSerializer(serializers.Serializer):
         regex=r"^[0-9]{6}$",
         error_messages={"invalid": _("OTP must be exactly 6 digits.")},
     )
+
+
+# User settings serializer
+class UserSettingsSerializer(serializers.ModelSerializer):
+    """User settings serializer"""
+
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = UserSettings
+        fields = (
+            "id",
+            "user",
+            "sms_notifications",
+            "email_notifications",
+            "reminder_minutes",
+        )
+        read_only_fields = ["id"]

@@ -5,10 +5,10 @@ set -e
 echo "Running migrations..."
 python manage.py makemigrations accounts --noinput 
 python manage.py migrate accounts --noinput 
-# python manage.py makemigrations core --noinput 
-# python manage.py migrate core --noinput
-python manage.py makemigrations  --noinput 
-python manage.py migrate  --noinput
+python manage.py makemigrations core --noinput 
+python manage.py migrate core --noinput
+python manage.py makemigrations assistant --noinput 
+python manage.py migrate assistant --noinput
 
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
