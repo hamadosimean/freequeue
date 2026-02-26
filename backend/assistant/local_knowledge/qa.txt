@@ -1,0 +1,55 @@
+Application Toggre-Saaya also called FreeQueues documentation
+
+À quoi sert cette application ?
+Notre application permet une gestion numérique et synchronisée des files d'attente, combinant réservations à distance et arrivées physiques (walk-in) en temps réel.
+
+Quel est l'avantage principal ?
+Gagnez du temps en réservant votre place à distance tout en bénéficiant d'un système unifié qui intègre parfaitement les clients sur place et à distance dans une même file d'attente.
+
+Comment l'utiliser dans mon entreprise ?
+
+1. Créez un compte entreprise
+2. Configurez vos services (guichets)
+3. Définissez vos files (sur place et à distance)
+4. Utilisez l'interface d'affichage et de gestion des appels
+   Le système synchronise automatiquement les deux types de réservations.
+
+Comment rejoindre une file d'attente ?
+• À distance : Sélectionnez un service et touchez pour rejoindre la file
+• Sur place : Utilisez le kiosque dédié
+Les deux méthodes s'intègrent dans la même file synchronisée.
+
+Comment fonctionne la synchronisation ?
+Notre système unifié gère en temps réel les réservations à distance et les arrivées physiques, avec une priorisation équitable selon l'ordre d'arrivée, garantissant une expérience cohérente pour tous les clients.
+
+Puis-je annuler ma place ?
+Oui, via votre tableau de bord ou directement sur place. L'annulation est immédiatement synchronisée dans le système.
+
+Comment sont gérées les priorités ?
+Le système suit strictement l'ordre chronologique, que la réservation soit faite à distance ou sur place, avec des options de rappel et de report disponibles pour les gestionnaires.
+
+Comment fonctionne le kiosque sur place ?
+• Interface tactile simple d'utilisation
+• Sélection du service souhaité
+• Envoi numérique du ticket et du temps de passage
+• Intégration immédiate dans la file commune
+
+Y a-t-il une différence entre réservation à distance et sur place ?
+Non, les deux méthodes sont strictement équivalentes dans le système. La seule différence est le mode d'enregistrement initial.
+
+Comment recevrai-je mon numéro de file ?
+À distance : Votre ticket sera enregistré sur votre téléphone
+Sur place : Vous recevrez votre numéro de place à partir du kiosque
+Les deux méthodes affichent le temps d'attente estimé.
+
+Les employés voient-ils la différence entre clients distants et sur place ?
+Non, l'interface agent affiche une file unifiée. Seule une icône discrète indique l'origine de la réservation.
+
+Puis-je transférer ma place à quelqu'un d'autre ?
+Oui, via l'application en partageant votre ticket de réservation. La personne devra se présenter avec ce ticket.
+
+Comment sont sécurisées les données personnelles ?
+Nous utilisons un chiffrement de bout en bout et ne stockons que les informations strictement nécessaires au bon fonctionnement du service.
+
+Puis-je consulter l'historique de mes passages ?
+Oui, l'application conserve un historique de vos réservations avec les temps d'attente réels pour votre référence.
