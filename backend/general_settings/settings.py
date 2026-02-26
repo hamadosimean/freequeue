@@ -36,6 +36,8 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/day",
         "user": "1000/day",
+        "send_otp": "10/minute",
+        "verify_otp": "10/minute",
     },
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
@@ -67,26 +69,25 @@ DEFAULT_FROM_EMAIL = env("EMAIL_HOST_USER")
 # Authentication settings
 AUTH_USER_MODEL = "accounts.CustomUser"
 AUTHENTICATION_BACKENDS = [
-    "accounts.backends.PhoneBackend",
+    "accounts.backends.EmailBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
 # Djoser setup
 DJOSER = {
     "USER_ID_FIELD": "id",
-    "LOGIN_FIELD": "username",
-    "SEND_ACTIVATION_EMAIL": False,
-    "USER_CREATE_PASSWORD_RETYPE": False,
-    "SET_PASSWORD_RETYPE": False,
-    "PASSWORD_RESET_CONFIRM_RETYPE": False,
+    "LOGIN_FIELD": "email",
+    "SEND_ACTIVATION_EMAIL": True,
+    "SET_PASSWORD_RETYPE": True,
+    "PASSWORD_RESET_CONFIRM_RETYPE": True,
     "JWT_AUTH": True,
-    "PASSWORD_RESET_CONFIRM_URL": "password/reset/confirm/{uid}/{token}",
-    "USERNAME_RESET_CONFIRM_URL": "username/reset/confirm/{uid}/{token}",
-    "ACTIVATION_URL": "activate/{uid}/{token}",
-    # "SERIALIZERS": {
-    #     "user_create": "accounts.serializers.CustomUserCreateSerializer",
-    #     "user": "accounts.serializers.CustomUserSerializer",
-    #     "current_user": "accounts.serializers.CustomUserSerializer",
-    # },
+    "PASSWORD_RESET_CONFIRM_URL": "password/reset/confirm/?uid={uid}&token={token}",
+    "USERNAME_RESET_CONFIRM_URL": "username/reset/confirm/?uid={uid}&token={token}",
+    "ACTIVATION_URL": "activate/?uid={uid}&token={token}",
+    "SERIALIZERS": {
+        "user_create": "accounts.serializers.CustomUserCreateSerializer",
+        "user": "accounts.serializers.CustomUserSerializer",
+        "current_user": "accounts.serializers.CustomUserSerializer",
+    },
 }
 
 
@@ -152,3 +153,14 @@ LOGGING = {
 }
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "FreeQueues API",
+    "DESCRIPTION": "FreeQueues API",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
+}

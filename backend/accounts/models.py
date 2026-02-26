@@ -6,33 +6,34 @@ from django.contrib.auth.models import (
     AbstractUser,
 )
 from django.utils import timezone
-from general_settings.constants import OTP_EXPIRATION_MINUTES
+from general_settings.constants import OTP_EXPIRATION_TIME
 from general_settings.utils import TimeStampedModel
 from django.utils.translation import gettext_lazy as _
 
 
 # Create your models here.
 class UserManager(BaseUserManager):
-    def create_user(self, phone_number, password=None, **extra_fields):
+    def create_user(self, email, password=None, **extra_fields):
         """
-        Create and save a user with the given phone_number and password.
+        Create and save a user with the given email and password.
         """
-        if not phone_number:
-            raise ValueError(_("Users must have a phone number"))
-        user = self.model(phone_number=phone_number, **extra_fields)
+        if not email:
+            raise ValueError(_("Users must have an email address"))
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, phone_number, password=None, **extra_fields):
+    def create_superuser(self, email, password=None, **extra_fields):
         """
-        Create and save a superuser with the given phone_number and password.
+        Create and save a superuser with the given email and password.
         """
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
 
-        return self.create_user(phone_number, password, **extra_fields)
+        return self.create_user(email, password, **extra_fields)
 
 
 class CustomUser(AbstractUser, PermissionsMixin):
@@ -44,7 +45,7 @@ class CustomUser(AbstractUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     country_code = models.CharField(
         max_length=5,
-        default="+226",
+        default="226",
         verbose_name=_("Code pays"),
         help_text=_("Code pays de l'utilisateur"),
     )
@@ -56,30 +57,30 @@ class CustomUser(AbstractUser, PermissionsMixin):
     )
     email = models.EmailField(
         max_length=254,
-        blank=True,
-        null=True,
+        unique=True,
         verbose_name=_("Email"),
-        help_text=_("Adresse email de l'utilisateur (optionnel)"),
+        help_text=_("Email address"),
     )
+    username = None
 
-    USERNAME_FIELD = "phone_number"
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     objects = UserManager()
 
     def __str__(self):
         if self.first_name and self.last_name:
-            return f"{self.first_name} {self.last_name} - {self.phone_number}"
-        return self.phone_number
+            return f"{self.first_name} {self.last_name} - {self.email}"
+        return self.email
 
     def get_full_name(self):
         """Return the first_name plus the last_name, with a space in between."""
         full_name = f"{self.first_name} {self.last_name}".strip()
-        return full_name or self.phone_number
+        return full_name or self.email
 
     def get_short_name(self):
         """Return the short name for the user."""
-        return self.first_name or self.phone_number
+        return self.first_name or self.email
 
     class Meta:
         verbose_name = _("Utilisateur")
@@ -132,7 +133,7 @@ class OTP(TimeStampedModel):
     def is_expired(self):
         """Check if OTP has expired."""
         return (
-            self.updated_at + timezone.timedelta(minutes=OTP_EXPIRATION_MINUTES)
+            self.updated_at + timezone.timedelta(minutes=OTP_EXPIRATION_TIME)
             < timezone.now()
         )
 

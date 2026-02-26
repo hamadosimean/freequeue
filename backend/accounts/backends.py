@@ -1,24 +1,20 @@
 from django.contrib.auth.backends import BaseBackend
-
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
 
-class PhoneBackend(BaseBackend):
+class EmailBackend(BaseBackend):
     """
-    Authenticate users using phone_number only (passwordless).
-    Typically used with OTP verification.
+    Authenticate users using email and password.
     """
 
-    def authenticate(self, request, phone_number=None, password=None, **kwargs):
-        if phone_number is None:
-            phone_number = kwargs.get("username")
-        if password is None:
-            password = kwargs.get("password")
+    def authenticate(self, request, email=None, password=None, **kwargs):
+        if email is None:
+            email = kwargs.get("username")
         try:
-            user = User.objects.get(phone_number=phone_number, password=password)
-            if user.is_active:
+            user = User.objects.get(email=email)
+            if user.check_password(password) and user.is_active:
                 return user
         except User.DoesNotExist:
             return None
