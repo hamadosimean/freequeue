@@ -1,3 +1,4 @@
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from rest_framework import status
@@ -7,6 +8,8 @@ from .models import (
     Company,
     Branch,
     Payment,
+    MarketingImage,
+    MarketingVideo,
     BranchInfos,
     Service,
     Queue,
@@ -243,3 +246,398 @@ class PaymentTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Decimal(response.data["amount"]), Decimal(1000.00))
         self.assertEqual(response.data["status"], "paid")
+
+
+# ==================================================================
+# Branch settings tests
+# ==================================================================
+
+
+class BranchSettingsTestCase(APITestCase):
+    """
+    Branch Settings Test Case
+    Test :
+    - Get branch settings
+    - Update branch settings
+    """
+
+    def setUp(self):
+        self.user, _ = User.objects.get_or_create(
+            email="user@gmail", password="password", phone_number="123456789"
+        )
+        self.user_2, _ = User.objects.get_or_create(
+            email="user_2@gmail", password="password", phone_number="123456787"
+        )
+        self.company = Company.objects.create(
+            name="Company 1", description="Description 1", user=self.user
+        )
+        self.branch = Branch.objects.create(
+            name="Branch 1", description="Description 1", company=self.company
+        )
+        self.branch_settings = BranchSettings.objects.create(
+            branch=self.branch,
+        )
+
+    def test_get_branch_settings(self):
+        url = reverse("branch-settings", kwargs={"branch_id": self.branch.id})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_branch_settings(self):
+        url = reverse("branch-settings", kwargs={"branch_id": self.branch.id})
+        data = {"voice_style": "woman", "show_info": False}
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["voice_style"], "woman")
+        self.assertEqual(response.data["show_info"], False)
+
+    def test_disallow_get_branch_settings(self):
+        url = reverse("branch-settings", kwargs={"branch_id": self.branch.id})
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_disallow_update_branch_settings(self):
+        url = reverse("branch-settings", kwargs={"branch_id": self.branch.id})
+        data = {"voice_style": "woman", "show_info": False}
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+# =======================================================================
+# Marketing images
+# =======================================================================
+
+
+class MarketingImagesTestCase(APITestCase):
+    """
+    Marketing Images Test Case
+    Test :
+    - List marketing images
+    - Create marketing image
+    - Retrieve marketing image
+    - Update marketing image
+    - Delete marketing image
+    - Disallow update marketing image
+    - Disallow delete marketing image
+    """
+
+    def setUp(self):
+        self.user, _ = User.objects.get_or_create(
+            email="user@gmail", password="password", phone_number="123456789"
+        )
+        self.user_2, _ = User.objects.get_or_create(
+            email="user_2@gmail", password="password", phone_number="123456787"
+        )
+        self.company = Company.objects.create(
+            name="Company 1", description="Description 1", user=self.user
+        )
+        self.branch = Branch.objects.create(
+            name="Branch 1", description="Description 1", company=self.company
+        )
+        self.marketing_image = MarketingImage.objects.create(
+            branch=self.branch,
+            image=SimpleUploadedFile(
+                "/backend/assets/images/image.jpeg", b"file_content", "image/jpeg"
+            ),
+            title="Title 1",
+            description="Description 1",
+        )
+
+    def test_list_marketing_images(self):
+        url = reverse("marketing-images", kwargs={"branch_id": self.branch.id})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+    def test_retrieve_marketing_image(self):
+        url = reverse(
+            "marketing-image-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "marketing_image_id": self.marketing_image.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_marketing_image(self):
+        url = reverse(
+            "marketing-image-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "marketing_image_id": self.marketing_image.id,
+            },
+        )
+        data = {"title": "New Title"}
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["title"], "New Title")
+
+    def test_disallow_get_marketing_image(self):
+        url = reverse(
+            "marketing-image-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "marketing_image_id": self.marketing_image.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_disallow_update_marketing_image(self):
+        url = reverse(
+            "marketing-image-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "marketing_image_id": self.marketing_image.id,
+            },
+        )
+        data = {"title": "New Title"}
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_disallow_delete_marketing_image(self):
+        url = reverse(
+            "marketing-image-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "marketing_image_id": self.marketing_image.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+# =============================================================================
+# Marketing video tests
+# =============================================================================
+
+
+class MarketingVideoTestCase(APITestCase):
+    """
+    Marketing Video Test Case
+    Test :
+    - List marketing videos
+    - Create marketing video
+    - Retrieve marketing video
+    - Update marketing video
+    - Delete marketing video
+    - Disallow update marketing video
+    - Disallow delete marketing video
+    """
+
+    def setUp(self):
+        self.user, _ = User.objects.get_or_create(
+            email="user@gmail", password="password", phone_number="123456789"
+        )
+        self.user_2, _ = User.objects.get_or_create(
+            email="user_2@gmail", password="password", phone_number="123456787"
+        )
+        self.company = Company.objects.create(
+            name="Company 1", description="Description 1", user=self.user
+        )
+        self.branch = Branch.objects.create(
+            name="Branch 1", description="Description 1", company=self.company
+        )
+        self.marketing_video = MarketingVideo.objects.create(
+            branch=self.branch,
+            video=SimpleUploadedFile(
+                "/backend/assets/videos/video.mp4", b"file_content", "video/mp4"
+            ),
+            title="Title 1",
+            description="Description 1",
+        )
+
+    def test_list_marketing_videos(self):
+        url = reverse("marketing-videos", kwargs={"branch_id": self.branch.id})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+    def test_retrieve_marketing_video(self):
+        url = reverse(
+            "marketing-video-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "marketing_video_id": self.marketing_video.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_marketing_video(self):
+        url = reverse(
+            "marketing-video-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "marketing_video_id": self.marketing_video.id,
+            },
+        )
+        data = {"title": "New Title"}
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["title"], "New Title")
+
+    def test_disallow_get_marketing_video(self):
+        url = reverse(
+            "marketing-video-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "marketing_video_id": self.marketing_video.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_disallow_update_marketing_video(self):
+        url = reverse(
+            "marketing-video-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "marketing_video_id": self.marketing_video.id,
+            },
+        )
+        data = {"title": "New Title"}
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_disallow_delete_marketing_video(self):
+        url = reverse(
+            "marketing-video-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "marketing_video_id": self.marketing_video.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+# =============================================================================
+# Service tests
+# =============================================================================
+
+
+class ServiceTestCase(APITestCase):
+    """
+    Service Test Case
+    Test :
+    - List services
+    - Create service
+    - Retrieve service
+    - Update service
+    - Delete service
+    - Disallow update service
+    - Disallow delete service
+    """
+
+    def setUp(self):
+        self.user, _ = User.objects.get_or_create(
+            email="user@gmail", password="password", phone_number="123456789"
+        )
+        self.user_2, _ = User.objects.get_or_create(
+            email="user_2@gmail", password="password", phone_number="123456787"
+        )
+        self.company = Company.objects.create(
+            name="Company 1", description="Description 1", user=self.user
+        )
+        self.branch = Branch.objects.create(
+            name="Branch 1",
+            description="Description 1",
+            company=self.company,
+            is_active=True,
+        )
+        self.service = Service.objects.create(
+            branch=self.branch,
+            name="Service 1",
+            description="Description 1",
+            daily_limit=100,
+            waiting_time=60,
+            is_active=True,
+        )
+
+    def test_list_services(self):
+        url = reverse("service", kwargs={"branch_id": self.branch.id})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+    def test_retrieve_service(self):
+        url = reverse(
+            "service-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "service_id": self.service.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_service(self):
+        url = reverse(
+            "service-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "service_id": self.service.id,
+            },
+        )
+        data = {"name": "New Name"}
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["name"], "New Name")
+
+    def test_disallow_get_service(self):
+        url = reverse(
+            "service-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "service_id": self.service.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_disallow_update_service(self):
+        url = reverse(
+            "service-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "service_id": self.service.id,
+            },
+        )
+        data = {"name": "New Name"}
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_disallow_delete_service(self):
+        url = reverse(
+            "service-detail",
+            kwargs={
+                "branch_id": self.branch.id,
+                "service_id": self.service.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

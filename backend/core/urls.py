@@ -31,4 +31,43 @@ urlpatterns = [
         views.PaymentDetailAPIView.as_view(),
         name="payment-detail",
     ),
+    # branch settings
+    path(
+        "branch/<uuid:branch_id>/settings",
+        views.BranchSettingsAPIView.as_view(),
+        name="branch-settings",
+    ),
+    # marketing images
+    path(
+        "branch/<uuid:branch_id>/marketing-images",
+        views.MarketingImagesAPIView.as_view(),
+        name="marketing-images",
+    ),
+    path(
+        "branch/<uuid:branch_id>/marketing-images/<uuid:marketing_image_id>",
+        views.MarketingImageDetailAPIView.as_view(),
+        name="marketing-image-detail",
+    ),
+    # marketing videos
+    path(
+        "branch/<uuid:branch_id>/marketing-videos",
+        views.MarketingVideoAPIView.as_view(),
+        name="marketing-videos",
+    ),
+    path(
+        "branch/<uuid:branch_id>/marketing-videos/<uuid:marketing_video_id>",
+        views.MarketingVideoDetailAPIView.as_view(),
+        name="marketing-video-detail",
+    ),
+    # service
+    path(
+        "branch/<uuid:branch_id>/service",
+        views.ServiceAPIView.as_view(),
+        name="service",
+    ),
+    path(
+        "branch/<uuid:branch_id>/service/<uuid:service_id>",
+        views.ServiceDetailAPIView.as_view(),
+        name="service-detail",
+    ),
 ]

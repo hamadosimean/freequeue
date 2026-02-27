@@ -40,10 +40,7 @@ class IsUserService(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """Check if the requesting user owns the company connected to this service's branch."""
-        return (
-            obj.service.branch.company.user == request.user
-            and obj.service.branch.is_active
-        )
+        return obj.branch.company.user == request.user and obj.branch.is_active
 
 
 class IsUserPayment(BasePermission):

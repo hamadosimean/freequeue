@@ -4,7 +4,7 @@ from .models import (
     Branch,
     BranchInfos,
     MarketingImage,
-    Video,
+    MarketingVideo,
     Service,
     Queue,
     Payment,
@@ -149,21 +149,23 @@ class MarketingImageSerializer(serializers.ModelSerializer):
 
 
 # ===============================================
-# Video Serializers
+# MarketingVideo Serializers
 # ==============================================
 
 
-class VideoSerializer(serializers.ModelSerializer):
+class MarketingVideoSerializer(serializers.ModelSerializer):
     branch = BranchSerializer(read_only=True)
     branch_id = serializers.IntegerField(write_only=True)
 
     class Meta:
-        model = Video
+        model = MarketingVideo
         fields = [
             "id",
             "branch",
             "branch_id",
             "video",
+            "title",
+            "description",
             "created_at",
             "updated_at",
         ]

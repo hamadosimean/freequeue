@@ -21,7 +21,7 @@ from .models import (
     Branch,
     BranchInfos,
     MarketingImage,
-    Video,
+    MarketingVideo,
     Service,
     Queue,
     Payment,
@@ -32,7 +32,7 @@ from .serializers import (
     BranchSerializer,
     BranchInfosSerializer,
     MarketingImageSerializer,
-    VideoSerializer,
+    MarketingVideoSerializer,
     ServiceSerializer,
     QueueSerializer,
     PaymentSerializer,
@@ -57,7 +57,7 @@ class CompanyAPIView(APIView):
     def get(self, request):
         companies = Company.objects.all()
         serializer = CompanySerializer(companies, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = CompanySerializer(data=request.data)
@@ -87,14 +87,14 @@ class CompanyDetailAPIView(APIView):
     def get(self, request, company_id):
         company = self.get_object(company_id)
         serializer = CompanySerializer(company)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, company_id):
         company = self.get_object(company_id)
         serializer = CompanySerializer(company, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, company_id):
@@ -102,7 +102,7 @@ class CompanyDetailAPIView(APIView):
         serializer = CompanySerializer(company, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, company_id):
@@ -129,7 +129,7 @@ class BranchAPIView(APIView):
             company__user=request.user, company_id=company_id
         )
         serializer = BranchSerializer(branches, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, company_id):
         serializer = BranchSerializer(data=request.data)
@@ -137,6 +137,16 @@ class BranchAPIView(APIView):
             if serializer.is_valid(raise_exception=True):
                 branch = serializer.save(company_id=company_id)
                 Payment.objects.create(branch=branch)
+
+                # create branch infos during branch creation
+                BranchInfos.objects.create(
+                    branch=branch,
+                    title=f"Welcome to {branch.company.name}. Make sure to get your ticket before settling in. We appreciate your patience...",
+                )
+
+                # create branch settings during branch creation
+                BranchSettings.objects.create(branch=branch)
+
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -165,14 +175,14 @@ class BranchDetailAPIView(APIView):
     def get(self, request, company_id, branch_id):
         branch = self.get_object(company_id, branch_id)
         serializer = BranchSerializer(branch)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, company_id, branch_id):
         branch = self.get_object(company_id, branch_id)
         serializer = BranchSerializer(branch, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, company_id, branch_id):
@@ -180,7 +190,7 @@ class BranchDetailAPIView(APIView):
         serializer = BranchSerializer(branch, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, company_id, branch_id):
@@ -205,7 +215,7 @@ class PaymentAPIView(APIView):
     def get(self, request, branch_id):
         payments = Payment.objects.filter(branch_id=branch_id)
         serializer = PaymentSerializer(payments, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class PaymentDetailAPIView(APIView):
@@ -230,7 +240,7 @@ class PaymentDetailAPIView(APIView):
     def get(self, request, branch_id, payment_id):
         payment = self.get_object(branch_id, payment_id)
         serializer = PaymentSerializer(payment)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request, branch_id, payment_id):
         with transaction.atomic():
@@ -253,5 +263,238 @@ class PaymentDetailAPIView(APIView):
                 serializer.save()
                 branch.is_active = True
                 branch.save()
-                return Response(serializer.data)
+                return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ==========================================================================
+# branch settings views
+# ==========================================================================
+
+
+class BranchSettingsAPIView(APIView):
+    """
+    Branch Settings API View
+    GET: Get branch settings
+    PATCH: Update branch settings
+    """
+
+    permission_classes = [IsUserOwner]
+    throttle_classes = [UserRateThrottle]
+
+    def get_object(self, branch_id):
+        branch = BranchSettings.objects.filter(branch_id=branch_id).first()
+        self.check_object_permissions(self.request, branch)
+        return branch
+
+    def get(self, request, branch_id):
+        branch = self.get_object(branch_id)
+        serializer = BranchSettingsSerializer(branch)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, branch_id):
+        branch = self.get_object(branch_id)
+        serializer = BranchSettingsSerializer(branch, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ==========================================================================
+# Marketing images views
+# ==========================================================================
+
+
+class MarketingImagesAPIView(APIView):
+    """
+    Marketing Images API View
+    GET: Get marketing images
+    POST: Create marketing image
+    """
+
+    permission_classes = [IsUserOwner]
+    throttle_classes = [UserRateThrottle]
+
+    def get(self, request, branch_id):
+        marketing_images = MarketingImage.objects.filter(branch_id=branch_id)
+        serializer = MarketingImageSerializer(marketing_images, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, branch_id):
+        marketing_image = MarketingImage.objects.create(branch_id=branch_id)
+        serializer = MarketingImageSerializer(marketing_image)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class MarketingImageDetailAPIView(APIView):
+    """
+    Marketing Image Detail API View
+    GET: Get marketing image details
+    PATCH: Update marketing image
+    DELETE: Delete marketing image
+    """
+
+    permission_classes = [IsUserOwner]
+    throttle_classes = [UserRateThrottle]
+
+    def get_object(self, branch_id, marketing_image_id):
+        marketing_image = get_object_or_404(
+            MarketingImage, id=marketing_image_id, branch_id=branch_id
+        )
+        self.check_object_permissions(self.request, marketing_image)
+        return marketing_image
+
+    def get(self, request, branch_id, marketing_image_id):
+        marketing_image = self.get_object(branch_id, marketing_image_id)
+        serializer = MarketingImageSerializer(marketing_image)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, branch_id, marketing_image_id):
+        marketing_image = self.get_object(branch_id, marketing_image_id)
+        serializer = MarketingImageSerializer(
+            marketing_image, data=request.data, partial=True
+        )
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, branch_id, marketing_image_id):
+        marketing_image = self.get_object(branch_id, marketing_image_id)
+        marketing_image.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# =============================================================================
+# Marketing video views
+# =============================================================================
+
+
+class MarketingVideoAPIView(APIView):
+    """
+    Marketing Video API View
+    GET: Get all marketing videos
+    POST: Create a new marketing video
+    """
+
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [UserRateThrottle]
+
+    def get(self, request, branch_id):
+        marketing_videos = MarketingVideo.objects.filter(branch_id=branch_id)
+        serializer = MarketingVideoSerializer(marketing_videos, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, branch_id):
+        marketing_video = MarketingVideo.objects.create(branch_id=branch_id)
+        serializer = MarketingVideoSerializer(marketing_video)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class MarketingVideoDetailAPIView(APIView):
+    """
+    Marketing Video Detail API View
+    GET: Get marketing video details
+    PATCH: Update marketing video
+    DELETE: Delete marketing video
+    """
+
+    permission_classes = [IsUserOwner]
+    throttle_classes = [UserRateThrottle]
+
+    def get_object(self, branch_id, marketing_video_id):
+        marketing_video = get_object_or_404(
+            MarketingVideo, id=marketing_video_id, branch_id=branch_id
+        )
+        self.check_object_permissions(self.request, marketing_video)
+        return marketing_video
+
+    def get(self, request, branch_id, marketing_video_id):
+        marketing_video = self.get_object(branch_id, marketing_video_id)
+        serializer = MarketingVideoSerializer(marketing_video)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, branch_id, marketing_video_id):
+        marketing_video = self.get_object(branch_id, marketing_video_id)
+        serializer = MarketingVideoSerializer(
+            marketing_video, data=request.data, partial=True
+        )
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, branch_id, marketing_video_id):
+        marketing_video = self.get_object(branch_id, marketing_video_id)
+        marketing_video.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# =============================================================================
+# Service API View
+# =============================================================================
+
+
+class ServiceAPIView(APIView):
+    """
+    Service API View
+    GET: Get all services
+    POST: Create a new service
+    """
+
+    permission_classes = [IsUserService]
+    throttle_classes = [UserRateThrottle]
+
+    def get(self, request, branch_id):
+        services = Service.objects.filter(branch_id=branch_id)
+        serializer = ServiceSerializer(services, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, branch_id):
+        service = Service.objects.create(branch_id=branch_id)
+        serializer = ServiceSerializer(service)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ServiceDetailAPIView(APIView):
+    """
+    Service Detail API View
+    GET: Get service details
+    PATCH: Update service
+    DELETE: Delete service
+    """
+
+    permission_classes = [IsUserService]
+    throttle_classes = [UserRateThrottle]
+
+    def get_object(self, branch_id, service_id):
+        service = get_object_or_404(Service, id=service_id, branch_id=branch_id)
+        self.check_object_permissions(self.request, service)
+        return service
+
+    def get(self, request, branch_id, service_id):
+        service = self.get_object(branch_id, service_id)
+        serializer = ServiceSerializer(service)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, branch_id, service_id):
+        service = self.get_object(branch_id, service_id)
+        serializer = ServiceSerializer(service, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, branch_id, service_id):
+        service = self.get_object(branch_id, service_id)
+        serializer = ServiceSerializer(service, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, branch_id, service_id):
+        service = self.get_object(branch_id, service_id)
+        service.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -4,7 +4,7 @@ from .models import (
     Branch,
     BranchInfos,
     MarketingImage,
-    Video,
+    MarketingVideo,
     Service,
     Queue,
     Payment,
@@ -76,31 +76,48 @@ class BranchInfosAdmin(admin.ModelAdmin):
 
 @admin.register(MarketingImage)
 class MarketingImageAdmin(admin.ModelAdmin):
-    list_display = ["title", "branch"]
+    list_display = ["id", "branch", "image", "created_at", "updated_at"]
     list_filter = ["branch"]
+    list_links = ["id", "title"]
     search_fields = ["title", "description"]
     ordering = ["-created_at"]
 
 
-@admin.register(Video)
-class VideoAdmin(admin.ModelAdmin):
-    list_display = ["title", "branch"]
+@admin.register(MarketingVideo)
+class MarketingVideoAdmin(admin.ModelAdmin):
+    list_display = ["id", "branch", "title", "video", "created_at", "updated_at"]
     list_filter = ["branch"]
+    list_links = ["id", "title"]
     search_fields = ["title", "description"]
     ordering = ["-created_at"]
 
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ["name", "branch", "is_active"]
+    list_display = [
+        "id",
+        "branch",
+        "name",
+        "daily_limit",
+        "waiting_time",
+        "is_active",
+    ]
     list_filter = ["branch", "is_active"]
+    list_links = [
+        "id",
+        "name",
+    ]
     search_fields = ["name", "description"]
     ordering = ["-created_at"]
 
 
 @admin.register(Queue)
 class QueueAdmin(admin.ModelAdmin):
-    list_display = ["service", "user", "status", "queue_number"]
+    list_display = ["id", "service", "user", "status", "queue_number"]
     list_filter = ["service", "user", "status"]
+    list_links = [
+        "id",
+        "service",
+    ]
     search_fields = ["service__name", "user__username"]
     ordering = ["-created_at"]

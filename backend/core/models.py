@@ -200,7 +200,7 @@ class BranchSettings(TimeStampedModel):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID")
     )
-    branch = models.ForeignKey(
+    branch = models.OneToOneField(
         Branch,
         on_delete=models.CASCADE,
         related_name="setting",
@@ -249,7 +249,7 @@ class BranchInfos(TimeStampedModel):
         related_name="infos",
         verbose_name=_("Branch"),
     )
-    title = models.CharField(max_length=100, verbose_name=_("Title"))
+    title = models.CharField(max_length=500, verbose_name=_("Title"))
     description = models.TextField(blank=True, null=True, verbose_name=_("Description"))
 
     def __str__(self):
@@ -303,7 +303,7 @@ class MarketingImage(TimeStampedModel):
 # ===================================================
 # Video model
 # ===================================================
-class Video(TimeStampedModel):
+class MarketingVideo(TimeStampedModel):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID")
     )
@@ -321,8 +321,8 @@ class Video(TimeStampedModel):
         return self.branch.name + " - " + self.title
 
     class Meta:
-        verbose_name = "Video"
-        verbose_name_plural = "Videos"
+        verbose_name = "Marketing Video"
+        verbose_name_plural = "Marketing Videos"
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["title"]),
@@ -331,7 +331,7 @@ class Video(TimeStampedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["branch", "title"],
-                name="unique_video_branch_title",
+                name="unique_marketing_video_branch_title",
             ),
         ]
 
@@ -352,7 +352,9 @@ class Service(TimeStampedModel):
     name = models.CharField(max_length=100, verbose_name=_("Name"))
     description = models.TextField(blank=True, null=True, verbose_name=_("Description"))
     daily_limit = models.IntegerField(default=2000, verbose_name=_("Daily limit"))
-    wait_time = models.IntegerField(default=10, verbose_name=_("Wait time (minutes)"))
+    waiting_time = models.IntegerField(
+        default=10, verbose_name=_("Wait time (minutes)")
+    )
     is_active = models.BooleanField(default=True, verbose_name=_("Is active"))
 
     def __str__(self):
