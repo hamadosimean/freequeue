@@ -78,10 +78,11 @@ class PaymentSerializer(serializers.ModelSerializer):
             "status",
             "transaction_id",
             "payment_method",
+            "expired_at",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at", "expired_at"]
 
 
 # ==============================================

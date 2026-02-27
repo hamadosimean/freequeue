@@ -39,6 +39,7 @@ PAYMENT_STATUS = (
     ("pending", "Pending"),
     ("paid", "Paid"),
     ("failed", "Failed"),
+    ("expired", "Expired"),
 )
 
 PAYMENT_METHOD = (

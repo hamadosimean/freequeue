@@ -32,7 +32,14 @@ class BranchAdmin(admin.ModelAdmin):
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ["branch", "amount", "status", "payment_method"]
+    list_display = [
+        "branch",
+        "amount",
+        "status",
+        "payment_method",
+        "expired_at",
+        "transaction_id",
+    ]
     list_filter = ["branch", "status", "payment_method"]
     search_fields = ["branch__name", "transaction_id"]
     ordering = ["-created_at"]

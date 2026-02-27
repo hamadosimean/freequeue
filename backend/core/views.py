@@ -1,9 +1,11 @@
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.core.cache import cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from decimal import Decimal
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.throttling import UserRateThrottle
 from general_settings.permissions import (
@@ -78,11 +80,7 @@ class CompanyDetailAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get_object(self, company_id):
-        company = Company.objects.filter(user=self.request.user, id=company_id).first()
-        if not company:
-            return Response(
-                {"error": "Company not found"}, status=status.HTTP_404_NOT_FOUND
-            )
+        company = get_object_or_404(Company, user=self.request.user, id=company_id)
         self.check_object_permissions(self.request, company)
         return company
 
@@ -156,17 +154,11 @@ class BranchDetailAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get_object(self, company_id, branch_id):
-        branch = (
-            Branch.objects.select_related("company")
-            .filter(
-                company__user=self.request.user, id=branch_id, company_id=company_id
-            )
-            .first()
+        branch = get_object_or_404(
+            Branch.objects,
+            id=branch_id,
+            company_id=company_id,
         )
-        if not branch:
-            return Response(
-                {"error": "Branch not found"}, status=status.HTTP_404_NOT_FOUND
-            )
         self.check_object_permissions(self.request, branch)
         return branch
 
@@ -195,3 +187,71 @@ class BranchDetailAPIView(APIView):
         branch = self.get_object(company_id, branch_id)
         branch.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ======================================================================
+# Payment api view
+# ===================================================================
+class PaymentAPIView(APIView):
+    """
+    Payment API View
+    GET: Get all payments
+
+    """
+
+    permission_classes = [IsUserBranch]
+    throttle_classes = [UserRateThrottle]
+
+    def get(self, request, branch_id):
+        payments = Payment.objects.filter(branch_id=branch_id)
+        serializer = PaymentSerializer(payments, many=True)
+        return Response(serializer.data)
+
+
+class PaymentDetailAPIView(APIView):
+    """
+    Payment API View
+    GET: Get payment details
+    PATCH: Update payment
+    """
+
+    permission_classes = [IsUserPayment]
+    throttle_classes = [UserRateThrottle]
+
+    def get_object(self, branch_id, payment_id):
+        payment = Payment.objects.filter(id=payment_id, branch_id=branch_id).first()
+        if not payment:
+            return Response(
+                {"error": "Payment not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        self.check_object_permissions(self.request, payment)
+        return payment
+
+    def get(self, request, branch_id, payment_id):
+        payment = self.get_object(branch_id, payment_id)
+        serializer = PaymentSerializer(payment)
+        return Response(serializer.data)
+
+    def patch(self, request, branch_id, payment_id):
+        with transaction.atomic():
+            payment = self.get_object(branch_id, payment_id)
+            branch = payment.branch
+            serializer = PaymentSerializer(payment, data=request.data, partial=True)
+            if payment.status == "paid":
+                return Response(
+                    {"error": "Payment has already been made"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if serializer.is_valid():
+                if Decimal(serializer.validated_data["amount"]) <= Decimal(0):
+                    return Response(
+                        {"error": "Amount must be greater than 0"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                serializer.validated_data["status"] = "paid"
+                serializer.save()
+                branch.is_active = True
+                branch.save()
+                return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
