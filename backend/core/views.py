@@ -1,3 +1,4 @@
+import datetime
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -252,7 +253,7 @@ class PaymentDetailAPIView(APIView):
                     {"error": "Payment has already been made"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            if serializer.is_valid():
+            if serializer.is_valid(raise_exception=True):
                 if Decimal(serializer.validated_data["amount"]) <= Decimal(0):
                     return Response(
                         {"error": "Amount must be greater than 0"},
@@ -322,9 +323,11 @@ class MarketingImagesAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, branch_id):
-        marketing_image = MarketingImage.objects.create(branch_id=branch_id)
-        serializer = MarketingImageSerializer(marketing_image)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serializer = MarketingImageSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(branch_id=branch_id)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MarketingImageDetailAPIView(APIView):
@@ -349,6 +352,14 @@ class MarketingImageDetailAPIView(APIView):
         marketing_image = self.get_object(branch_id, marketing_image_id)
         serializer = MarketingImageSerializer(marketing_image)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, branch_id, marketing_image_id):
+        marketing_image = self.get_object(branch_id, marketing_image_id)
+        serializer = MarketingImageSerializer(marketing_image, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, branch_id, marketing_image_id):
         marketing_image = self.get_object(branch_id, marketing_image_id)
@@ -387,9 +398,11 @@ class MarketingVideoAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, branch_id):
-        marketing_video = MarketingVideo.objects.create(branch_id=branch_id)
-        serializer = MarketingVideoSerializer(marketing_video)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serializer = MarketingVideoSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(branch_id=branch_id)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MarketingVideoDetailAPIView(APIView):
@@ -452,9 +465,11 @@ class ServiceAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, branch_id):
-        service = Service.objects.create(branch_id=branch_id)
-        serializer = ServiceSerializer(service)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serializer = ServiceSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(branch_id=branch_id)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ServiceDetailAPIView(APIView):
@@ -482,7 +497,7 @@ class ServiceDetailAPIView(APIView):
         service = self.get_object(branch_id, service_id)
         serializer = ServiceSerializer(service, data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            serializer.save(branch_id=branch_id)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -490,7 +505,7 @@ class ServiceDetailAPIView(APIView):
         service = self.get_object(branch_id, service_id)
         serializer = ServiceSerializer(service, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            serializer.save(branch_id=branch_id)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -498,3 +513,109 @@ class ServiceDetailAPIView(APIView):
         service = self.get_object(branch_id, service_id)
         service.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# =======================================================
+# Queue views
+# =======================================================
+class QueueAPIView(APIView):
+    """
+    Queue API View
+    GET: Get all queues
+    POST: Create a new queue
+    """
+
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [UserRateThrottle]
+
+    def get(self, request, branch_id, service_id):
+        queues = Queue.objects.filter(branch_id=branch_id, service_id=service_id)
+        serializer = QueueSerializer(queues, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class JoinQueueAPIView(APIView):
+    """
+    Join Queue API View
+    POST: Join a queue
+    """
+
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [UserRateThrottle]
+
+    def post(self, request, branch_id, service_id):
+        with transaction.atomic():
+            queue = Queue.objects.filter(
+                service__branch_id=branch_id,
+                service_id=service_id,
+                user=request.user,
+                status="waiting",
+                date_joined=datetime.date.today(),
+            ).first()
+            if queue:
+                return Response(
+                    {"detail": "You are already in the queue"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            last_queue = (
+                Queue.objects.filter(
+                    service__branch_id=branch_id,
+                    service_id=service_id,
+                    date_joined=datetime.date.today(),
+                )
+                .order_by("-queue_number")
+                .first()
+            )
+            if last_queue:
+                queue = Queue.objects.create(
+                    service_id=service_id,
+                    user=request.user,
+                    queue_number=last_queue.queue_number + 1,
+                )
+            else:
+                queue = Queue.objects.create(
+                    service_id=service_id,
+                    user=request.user,
+                    queue_number=1,
+                )
+            queue.refresh_from_db()
+            queue = queue.queue_number
+        return Response({"queue_number": queue}, status=status.HTTP_200_OK)
+
+
+class LeaveQueueAPIView(APIView):
+    """
+    Leave Queue API View
+    PATCH: Leave a queue
+    """
+
+    permission_classes = [IsUserQueue]
+    throttle_classes = [UserRateThrottle]
+
+    def get_object(self, branch_id, service_id):
+        queue = get_object_or_404(
+            Queue,
+            service__branch_id=branch_id,
+            service_id=service_id,
+            user=self.request.user,
+            status="waiting",
+            date_joined=datetime.date.today(),
+        )
+        self.check_object_permissions(self.request, queue)
+        return queue
+
+    def patch(self, request, branch_id, service_id):
+        with transaction.atomic():
+            queue = self.get_object(branch_id, service_id)
+            if not queue:
+                return Response(
+                    {"detail": "You are not in the queue"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            queue.status = "canceled"
+            queue.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Something went wrong"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

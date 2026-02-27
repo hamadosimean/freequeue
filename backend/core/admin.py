@@ -113,11 +113,11 @@ class ServiceAdmin(admin.ModelAdmin):
 
 @admin.register(Queue)
 class QueueAdmin(admin.ModelAdmin):
-    list_display = ["id", "service", "user", "status", "queue_number"]
-    list_filter = ["service", "user", "status"]
+    list_display = ["id", "service", "user", "status", "queue_number", "date_joined"]
+    list_filter = ["service", "user", "status", "date_joined"]
     list_links = [
         "id",
         "service",
     ]
     search_fields = ["service__name", "user__username"]
-    ordering = ["-created_at"]
+    ordering = ["-date_joined"]

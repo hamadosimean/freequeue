@@ -131,12 +131,10 @@ class BranchInfosSerializer(serializers.ModelSerializer):
 
 class MarketingImageSerializer(serializers.ModelSerializer):
     branch = BranchSerializer(read_only=True)
-    branch_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = MarketingImage
         fields = [
-            "id",
             "branch",
             "branch_id",
             "image",
@@ -155,14 +153,12 @@ class MarketingImageSerializer(serializers.ModelSerializer):
 
 class MarketingVideoSerializer(serializers.ModelSerializer):
     branch = BranchSerializer(read_only=True)
-    branch_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = MarketingVideo
         fields = [
             "id",
             "branch",
-            "branch_id",
             "video",
             "title",
             "description",
@@ -179,14 +175,12 @@ class MarketingVideoSerializer(serializers.ModelSerializer):
 
 class ServiceSerializer(serializers.ModelSerializer):
     branch = BranchSerializer(read_only=True)
-    branch_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Service
         fields = [
             "id",
             "branch",
-            "branch_id",
             "name",
             "description",
             "is_active",
@@ -205,17 +199,14 @@ class ServiceSerializer(serializers.ModelSerializer):
 
 class QueueSerializer(serializers.ModelSerializer):
     service = ServiceSerializer(read_only=True)
-    service_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Queue
         fields = [
             "id",
             "service",
-            "service_id",
             "status",
             "queue_number",
-            "created_at",
-            "updated_at",
+            "date_joined",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "date_joined"]

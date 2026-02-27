@@ -1,4 +1,5 @@
 from django.core.files.uploadedfile import SimpleUploadedFile
+import datetime
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from rest_framework import status
@@ -641,3 +642,79 @@ class ServiceTestCase(APITestCase):
         self.client.force_authenticate(user=self.user_2)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+# =============================================================================
+# Queue tests
+# =============================================================================
+
+
+class QueueTestCase(APITestCase):
+    """
+    Queue Test Case
+    Test :
+    - Join queue
+    - Leave queue
+    """
+
+    def setUp(self):
+        self.user, _ = User.objects.get_or_create(
+            email="user@gmail", password="password", phone_number="123456789"
+        )
+        self.user_2, _ = User.objects.get_or_create(
+            email="user_2@gmail", password="password", phone_number="123456787"
+        )
+        self.company = Company.objects.create(
+            name="Company 1", description="Description 1", user=self.user
+        )
+        self.branch = Branch.objects.create(
+            name="Branch 1",
+            description="Description 1",
+            company=self.company,
+            is_active=True,
+        )
+        self.service = Service.objects.create(
+            branch=self.branch,
+            name="Service 1",
+            description="Description 1",
+            daily_limit=100,
+            waiting_time=60,
+            is_active=True,
+        )
+
+    def test_join_queue(self):
+        url = reverse(
+            "join-queue",
+            kwargs={
+                "branch_id": self.branch.id,
+                "service_id": self.service.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "waiting")
+
+    def test_leave_queue(self):
+        url = reverse(
+            "leave-queue",
+            kwargs={
+                "branch_id": self.branch.id,
+                "service_id": self.service.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.patch(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    # def test_disallow_leave_queue(self):
+    #     url = reverse(
+    #         "leave-queue",
+    #         kwargs={
+    #             "branch_id": self.branch.id,
+    #             "service_id": self.service.id,
+    #         },
+    #     )
+    #     self.client.force_authenticate(user=self.user_2)
+    #     response = self.client.patch(url)
+    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

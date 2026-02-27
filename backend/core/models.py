@@ -1,3 +1,5 @@
+import datetime
+from django.template.defaultfilters import default
 import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -402,6 +404,9 @@ class Queue(TimeStampedModel):
         verbose_name=_("Status"),
     )
     queue_number = models.IntegerField(default=1, verbose_name=_("Queue number"))
+    date_joined = models.DateField(
+        verbose_name=_("Date joined"), default=datetime.date.today
+    )
 
     def __str__(self):
         return self.service.name + " - " + self.user.get_full_name()
@@ -409,10 +414,11 @@ class Queue(TimeStampedModel):
     class Meta:
         verbose_name = "Queue"
         verbose_name_plural = "Queues"
-        ordering = ["-created_at"]
+        ordering = ["-date_joined"]
         indexes = [
             models.Index(fields=["status"]),
             models.Index(fields=["service"]),
+            models.Index(fields=["date_joined"]),
         ]
         constraints = [
             models.CheckConstraint(

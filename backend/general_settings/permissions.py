@@ -82,4 +82,8 @@ class IsUserQueue(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """Check if the requesting user is the owner of the queue entry."""
-        return obj.user == request.user
+        return (
+            obj.user == request.user
+            # and obj.service.branch.is_active
+            # and obj.status == "waiting"
+        )

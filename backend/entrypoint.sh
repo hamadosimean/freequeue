@@ -9,6 +9,8 @@ python manage.py makemigrations core --noinput
 python manage.py migrate core --noinput
 python manage.py makemigrations assistant --noinput 
 python manage.py migrate assistant --noinput
+python manage.py makemigrations  --noinput
+python manage.py migrate  --noinput
 
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
