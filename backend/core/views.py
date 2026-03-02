@@ -303,6 +303,40 @@ class BranchSettingsAPIView(APIView):
 
 
 # ==========================================================================
+# Branch Infos
+# ==========================================================================
+
+
+class BranchInfoAPIView(APIView):
+    """
+    Branch Info API View
+    GET: Get branch info
+    PATCH: Update branch info
+    """
+
+    permission_classes = [IsUserOwner]
+    throttle_classes = [UserRateThrottle]
+
+    def get_object(self, branch_id):
+        branch = get_object_or_404(BranchInfos, branch_id=branch_id)
+        self.check_object_permissions(self.request, branch)
+        return branch
+
+    def get(self, request, branch_id):
+        branch = self.get_object(branch_id)
+        serializer = BranchInfosSerializer(branch)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, branch_id):
+        branch = self.get_object(branch_id)
+        serializer = BranchInfosSerializer(branch, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ==========================================================================
 # Marketing images views
 # ==========================================================================
 

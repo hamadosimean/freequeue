@@ -309,6 +309,67 @@ class BranchSettingsTestCase(APITestCase):
 
 
 # =======================================================================
+# Branch infos
+# =======================================================================
+
+
+class BranchInfosTestCase(APITestCase):
+    """
+    Branch Infos Test Case
+    Test :
+    - Get branch infos
+    - Update branch infos
+    - Disallow get branch infos
+    - Disallow update branch infos
+    """
+
+    def setUp(self):
+        self.user, _ = User.objects.get_or_create(
+            email="user@gmail", password="password", phone_number="123456789"
+        )
+        self.user_2, _ = User.objects.get_or_create(
+            email="user_2@gmail", password="password", phone_number="123456787"
+        )
+        self.company = Company.objects.create(
+            name="Company 1", description="Description 1", user=self.user
+        )
+        self.branch = Branch.objects.create(
+            name="Branch 1", description="Description 1", company=self.company
+        )
+        self.branch_infos = BranchInfos.objects.create(
+            branch=self.branch, title="Test Title", description="Test Description"
+        )
+
+    def test_get_branch_infos(self):
+        url = reverse("branch-infos", kwargs={"branch_id": self.branch.id})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_branch_infos(self):
+        url = reverse("branch-infos", kwargs={"branch_id": self.branch.id})
+        data = {"title": "New Name", "description": "New Description"}
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["title"], "New Name")
+        self.assertEqual(response.data["description"], "New Description")
+
+    def test_disallow_get_branch_infos(self):
+        url = reverse("branch-infos", kwargs={"branch_id": self.branch.id})
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_disallow_update_branch_infos(self):
+        url = reverse("branch-infos", kwargs={"branch_id": self.branch.id})
+        data = {"title": "New Name", "description": "New Description"}
+        self.client.force_authenticate(user=self.user_2)
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+# =======================================================================
 # Marketing images
 # =======================================================================
 

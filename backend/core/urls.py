@@ -37,6 +37,12 @@ urlpatterns = [
         views.BranchSettingsAPIView.as_view(),
         name="branch-settings",
     ),
+    # branch infos
+    path(
+        "branch/<uuid:branch_id>/infos",
+        views.BranchInfoAPIView.as_view(),
+        name="branch-infos",
+    ),
     # marketing images
     path(
         "branch/<uuid:branch_id>/marketing-images",
