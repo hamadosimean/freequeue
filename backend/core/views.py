@@ -16,6 +16,8 @@ from general_settings.permissions import (
     IsUserPayment,
     IsUserOwner,
     IsUserQueue,
+    IsUserBranchAgent,
+    IsBranchAgent,
 )
 from .models import (
     Company,
@@ -230,7 +232,7 @@ class AssignBranchAgentAPIView(APIView):
     POST: Assign agent to a branch
     """
 
-    permission_classes = [IsUserBranch]
+    permission_classes = [IsUserBranchAgent]
     throttle_classes = [UserRateThrottle]
 
     def post(self, request, branch_id):
@@ -247,7 +249,7 @@ class RemoveBranchAgentAPIView(APIView):
     DELETE: Remove agent from a branch
     """
 
-    permission_classes = [IsUserBranch]
+    permission_classes = [IsUserBranchAgent]
     throttle_classes = [UserRateThrottle]
 
     def delete(self, request, branch_id, user_id):
@@ -267,6 +269,7 @@ class MyBranchAPIView(APIView):
     """
 
     throttle_classes = [UserRateThrottle]
+    permission_classes = [IsBranchAgent]
 
     def get(self, request):
         cache_key = f"my-branch:{request.user.id}"

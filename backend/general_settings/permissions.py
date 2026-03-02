@@ -83,3 +83,31 @@ class IsUserQueue(BasePermission):
     def has_object_permission(self, request, view, obj):
         """Check if the requesting user is the owner of the queue entry."""
         return obj.user == request.user
+
+
+class IsUserBranchAgent(BasePermission):
+    """
+    Permission class to ensure that only the user who created the branch agent can access it.
+    """
+
+    def has_permission(self, request, view):
+        """Check if the user is authenticated."""
+        return request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        """Check if the requesting user is the owner of the branch agent."""
+        return obj.user == request.user
+
+
+class IsBranchAgent(BasePermission):
+    """
+    Permission class to ensure that only the branch agent can access the branch.
+    """
+
+    def has_permission(self, request, view):
+        """Check if the user is authenticated."""
+        return request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        """Check if the requesting user is the owner of the branch agent."""
+        return obj.user == request.user
