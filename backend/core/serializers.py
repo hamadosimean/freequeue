@@ -9,6 +9,7 @@ from .models import (
     Queue,
     Payment,
     BranchSettings,
+    BranchAgent,
 )
 
 # ==============================================
@@ -83,6 +84,30 @@ class PaymentSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at", "expired_at"]
+
+
+# ==============================================
+# BranchAgent Serializers
+# ==============================================
+
+
+class BranchAgentSerializer(serializers.ModelSerializer):
+    branch = BranchSerializer(read_only=True)
+    branch_id = serializers.UUIDField(write_only=True)
+    user_id = serializers.UUIDField(write_only=True)
+
+    class Meta:
+        model = BranchAgent
+        fields = [
+            "id",
+            "branch",
+            "branch_id",
+            "user_id",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at", "is_active"]
 
 
 # ==============================================

@@ -22,8 +22,18 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
+        "CONNECTION_POOL_CLASS": "redis.BlockingConnectionPool",
+        "CONNECTION_POOL_CLASS_KWARGS": {
+            "max_connections": 50,
+            "timeout": 20,
+        },
+        "KEY_PREFIX": "freequeues",
+        "TIMEOUT": 300,
     }
 }
 
+# Store sessions in Redis
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
 CACHE_TTL = env("CACHE_TTL")

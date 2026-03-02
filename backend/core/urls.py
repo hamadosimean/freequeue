@@ -20,6 +20,22 @@ urlpatterns = [
         views.BranchDetailAPIView.as_view(),
         name="branch-detail",
     ),
+    # assign agent to a branch
+    path(
+        "branch/<uuid:branch_id>/assign-agent",
+        views.AssignBranchAgentAPIView.as_view(),
+        name="assign-agent",
+    ),
+    path(
+        "branch/<uuid:branch_id>/agent/<uuid:user_id>/remove",
+        views.RemoveBranchAgentAPIView.as_view(),
+        name="remove-agent",
+    ),
+    path(
+        "branch/me",
+        views.MyBranchAPIView.as_view(),
+        name="my-branch",
+    ),
     # payment
     path(
         "branch/<uuid:branch_id>/payment",

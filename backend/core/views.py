@@ -21,6 +21,7 @@ from .models import (
     Company,
     Branch,
     BranchInfos,
+    BranchAgent,
     MarketingImage,
     MarketingVideo,
     Service,
@@ -38,7 +39,9 @@ from .serializers import (
     QueueSerializer,
     PaymentSerializer,
     BranchSettingsSerializer,
+    BranchAgentSerializer,
 )
+from general_settings.constants import CACHE_TIMEOUT_MINUTES
 # Create your views here.
 
 
@@ -56,7 +59,10 @@ class CompanyAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get(self, request):
-        companies = Company.objects.all()
+        companies = cache.get("company:list")
+        if not companies:
+            companies = Company.objects.all()
+            cache.set("company:list", companies, timeout=CACHE_TIMEOUT_MINUTES * 60)
         serializer = CompanySerializer(companies, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -81,7 +87,11 @@ class CompanyDetailAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get_object(self, company_id):
-        company = get_object_or_404(Company, user=self.request.user, id=company_id)
+        cache_key = f"company:{company_id}:user:{self.request.user.id}"
+        company = cache.get(cache_key)
+        if not company:
+            company = get_object_or_404(Company, user=self.request.user, id=company_id)
+            cache.set(cache_key, company, timeout=CACHE_TIMEOUT_MINUTES * 60)
         self.check_object_permissions(self.request, company)
         return company
 
@@ -126,9 +136,13 @@ class BranchAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get(self, request, company_id):
-        branches = Branch.objects.select_related("company").filter(
-            company__user=request.user, company_id=company_id
-        )
+        cache_key = f"branch:{company_id}:user:{request.user.id}"
+        branches = cache.get(cache_key)
+        if not branches:
+            branches = Branch.objects.select_related("company").filter(
+                company__user=request.user, company_id=company_id
+            )
+            cache.set(cache_key, branches, timeout=CACHE_TIMEOUT_MINUTES * 60)
         serializer = BranchSerializer(branches, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -165,11 +179,18 @@ class BranchDetailAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get_object(self, company_id, branch_id):
-        branch = get_object_or_404(
-            Branch.objects,
-            id=branch_id,
-            company_id=company_id,
+        cache_key = (
+            f"branch:{branch_id}:company:{company_id}:user:{self.request.user.id}"
         )
+        branch = cache.get(cache_key)
+        if not branch:
+            branch = get_object_or_404(
+                Branch.objects,
+                id=branch_id,
+                company_id=company_id,
+            )
+            cache.set(cache_key, branch, timeout=CACHE_TIMEOUT_MINUTES * 60)
+
         self.check_object_permissions(self.request, branch)
         return branch
 
@@ -200,6 +221,63 @@ class BranchDetailAPIView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+# ===================================================================
+# Agent branch api view
+# ==================================================================
+class AssignBranchAgentAPIView(APIView):
+    """
+    Assign agent to a branch
+    POST: Assign agent to a branch
+    """
+
+    permission_classes = [IsUserBranch]
+    throttle_classes = [UserRateThrottle]
+
+    def post(self, request, branch_id):
+        serializer = BranchAgentSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(branch_id=branch_id)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RemoveBranchAgentAPIView(APIView):
+    """
+    Remove agent from a branch
+    DELETE: Remove agent from a branch
+    """
+
+    permission_classes = [IsUserBranch]
+    throttle_classes = [UserRateThrottle]
+
+    def delete(self, request, branch_id, user_id):
+        branch_agent = BranchAgent.objects.filter(
+            user_id=user_id, branch_id=branch_id
+        ).first()
+        if not branch_agent:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        branch_agent.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class MyBranchAPIView(APIView):
+    """
+    My Branch API View
+    GET: Get my branch
+    """
+
+    throttle_classes = [UserRateThrottle]
+
+    def get(self, request):
+        cache_key = f"my-branch:{request.user.id}"
+        my_branch = cache.get(cache_key)
+        if not my_branch:
+            my_branch = BranchAgent.objects.filter(user_id=request.user.id).first()
+            cache.set(cache_key, my_branch, timeout=CACHE_TIMEOUT_MINUTES * 60)
+        serializer = BranchSerializer(my_branch.branch)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 # ======================================================================
 # Payment api view
 # ===================================================================
@@ -214,7 +292,11 @@ class PaymentAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get(self, request, branch_id):
-        payments = Payment.objects.filter(branch_id=branch_id)
+        cache_key = f"payment:{branch_id}:user:{request.user.id}"
+        payments = cache.get(cache_key)
+        if not payments:
+            payments = Payment.objects.filter(branch_id=branch_id)
+            cache.set(cache_key, payments, timeout=CACHE_TIMEOUT_MINUTES * 60)
         serializer = PaymentSerializer(payments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -230,7 +312,13 @@ class PaymentDetailAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get_object(self, branch_id, payment_id):
-        payment = Payment.objects.filter(id=payment_id, branch_id=branch_id).first()
+        cache_key = (
+            f"payment:{payment_id}:branch:{branch_id}:user:{self.request.user.id}"
+        )
+        payment = cache.get(cache_key)
+        if not payment:
+            payment = Payment.objects.filter(id=payment_id, branch_id=branch_id).first()
+            cache.set(cache_key, payment, timeout=CACHE_TIMEOUT_MINUTES * 60)
         if not payment:
             return Response(
                 {"error": "Payment not found"}, status=status.HTTP_404_NOT_FOUND
@@ -284,7 +372,11 @@ class BranchSettingsAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get_object(self, branch_id):
-        branch = BranchSettings.objects.filter(branch_id=branch_id).first()
+        cache_key = f"branch_settings:{branch_id}:user:{self.request.user.id}"
+        branch = cache.get(cache_key)
+        if not branch:
+            branch = BranchSettings.objects.filter(branch_id=branch_id).first()
+            cache.set(cache_key, branch, timeout=CACHE_TIMEOUT_MINUTES * 60)
         self.check_object_permissions(self.request, branch)
         return branch
 
@@ -318,7 +410,11 @@ class BranchInfoAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get_object(self, branch_id):
-        branch = get_object_or_404(BranchInfos, branch_id=branch_id)
+        cache_key = f"branch_infos:{branch_id}:user:{self.request.user.id}"
+        branch = cache.get(cache_key)
+        if not branch:
+            branch = get_object_or_404(BranchInfos, branch_id=branch_id)
+            cache.set(cache_key, branch, timeout=CACHE_TIMEOUT_MINUTES * 60)
         self.check_object_permissions(self.request, branch)
         return branch
 
@@ -352,7 +448,11 @@ class MarketingImagesAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get(self, request, branch_id):
-        marketing_images = MarketingImage.objects.filter(branch_id=branch_id)
+        cache_key = f"marketing_images:{branch_id}:user:{self.request.user.id}"
+        marketing_images = cache.get(cache_key)
+        if not marketing_images:
+            marketing_images = MarketingImage.objects.filter(branch_id=branch_id)
+            cache.set(cache_key, marketing_images, timeout=CACHE_TIMEOUT_MINUTES * 60)
         serializer = MarketingImageSerializer(marketing_images, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -376,9 +476,13 @@ class MarketingImageDetailAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get_object(self, branch_id, marketing_image_id):
-        marketing_image = get_object_or_404(
-            MarketingImage, id=marketing_image_id, branch_id=branch_id
-        )
+        cache_key = f"marketing_image:{marketing_image_id}:branch:{branch_id}:user:{self.request.user.id}"
+        marketing_image = cache.get(cache_key)
+        if not marketing_image:
+            marketing_image = get_object_or_404(
+                MarketingImage, id=marketing_image_id, branch_id=branch_id
+            )
+            cache.set(cache_key, marketing_image, timeout=CACHE_TIMEOUT_MINUTES * 60)
         self.check_object_permissions(self.request, marketing_image)
         return marketing_image
 
@@ -427,7 +531,11 @@ class MarketingVideoAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get(self, request, branch_id):
-        marketing_videos = MarketingVideo.objects.filter(branch_id=branch_id)
+        cache_key = f"marketing_videos:{branch_id}:user:{self.request.user.id}"
+        marketing_videos = cache.get(cache_key)
+        if not marketing_videos:
+            marketing_videos = MarketingVideo.objects.filter(branch_id=branch_id)
+            cache.set(cache_key, marketing_videos, timeout=CACHE_TIMEOUT_MINUTES * 60)
         serializer = MarketingVideoSerializer(marketing_videos, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -451,9 +559,13 @@ class MarketingVideoDetailAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get_object(self, branch_id, marketing_video_id):
-        marketing_video = get_object_or_404(
-            MarketingVideo, id=marketing_video_id, branch_id=branch_id
-        )
+        cache_key = f"marketing_video:{marketing_video_id}:branch:{branch_id}:user:{self.request.user.id}"
+        marketing_video = cache.get(cache_key)
+        if not marketing_video:
+            marketing_video = get_object_or_404(
+                MarketingVideo, id=marketing_video_id, branch_id=branch_id
+            )
+            cache.set(cache_key, marketing_video, timeout=CACHE_TIMEOUT_MINUTES * 60)
         self.check_object_permissions(self.request, marketing_video)
         return marketing_video
 
@@ -494,7 +606,11 @@ class ServiceAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get(self, request, branch_id):
-        services = Service.objects.filter(branch_id=branch_id)
+        cache_key = f"services:{branch_id}:user:{self.request.user.id}"
+        services = cache.get(cache_key)
+        if not services:
+            services = Service.objects.filter(branch_id=branch_id)
+            cache.set(cache_key, services, timeout=CACHE_TIMEOUT_MINUTES * 60)
         serializer = ServiceSerializer(services, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -518,7 +634,13 @@ class ServiceDetailAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get_object(self, branch_id, service_id):
-        service = get_object_or_404(Service, id=service_id, branch_id=branch_id)
+        cache_key = (
+            f"service:{service_id}:branch:{branch_id}:user:{self.request.user.id}"
+        )
+        service = cache.get(cache_key)
+        if not service:
+            service = get_object_or_404(Service, id=service_id, branch_id=branch_id)
+            cache.set(cache_key, service, timeout=CACHE_TIMEOUT_MINUTES * 60)
         self.check_object_permissions(self.request, service)
         return service
 
@@ -563,7 +685,13 @@ class QueueAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get(self, request, branch_id, service_id):
-        queues = Queue.objects.filter(branch_id=branch_id, service_id=service_id)
+        cache_key = (
+            f"queues:{branch_id}:service:{service_id}:user:{self.request.user.id}"
+        )
+        queues = cache.get(cache_key)
+        if not queues:
+            queues = Queue.objects.filter(branch_id=branch_id, service_id=service_id)
+            cache.set(cache_key, queues, timeout=CACHE_TIMEOUT_MINUTES * 60)
         serializer = QueueSerializer(queues, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

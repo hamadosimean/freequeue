@@ -15,6 +15,7 @@ from .models import (
     Service,
     Queue,
     Payment,
+    BranchAgent,
     BranchSettings,
 )
 
@@ -183,6 +184,66 @@ class BranchTestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+# =======================================================================
+# branch agent tests
+# =======================================================================
+
+
+class BranchAgentTestCase(APITestCase):
+    def setUp(self):
+        self.user, _ = User.objects.get_or_create(
+            email="user@gmail", password="password", phone_number="123456789"
+        )
+        self.agent, _ = User.objects.get_or_create(
+            email="agent@gmail", password="password", phone_number="987654321"
+        )
+        self.company = Company.objects.create(
+            name="Company 1", description="Description 1", user=self.user
+        )
+        self.branch = Branch.objects.create(
+            name="Branch 1", description="Description 1", company=self.company
+        )
+
+    def test_assign_agent(self):
+        url = reverse("assign-agent", kwargs={"branch_id": self.branch.id})
+        data = {"user_id": self.agent.id, "branch_id": self.branch.id}
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_unassign_agent(self):
+        # assign agent
+        url = reverse("assign-agent", kwargs={"branch_id": self.branch.id})
+        data = {"user_id": self.agent.id, "branch_id": self.branch.id}
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # unassign agent
+        url = reverse(
+            "remove-agent",
+            kwargs={"branch_id": self.branch.id, "user_id": self.agent.id},
+        )
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_my_branches(self):
+        # assign agent
+        url = reverse("assign-agent", kwargs={"branch_id": self.branch.id})
+        data = {"user_id": self.agent.id, "branch_id": self.branch.id}
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # get my branches
+        url = reverse("my-branch")
+        self.client.force_authenticate(user=self.agent)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 # =======================================================================
