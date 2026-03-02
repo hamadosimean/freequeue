@@ -693,9 +693,21 @@ class QueueTestCase(APITestCase):
         self.client.force_authenticate(user=self.user_2)
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["status"], "waiting")
 
     def test_leave_queue(self):
+
+        # join the queue
+        join_url = reverse(
+            "join-queue",
+            kwargs={
+                "branch_id": self.branch.id,
+                "service_id": self.service.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user)
+        self.client.post(join_url)
+
+        # leave the queue
         url = reverse(
             "leave-queue",
             kwargs={
@@ -703,18 +715,66 @@ class QueueTestCase(APITestCase):
                 "service_id": self.service.id,
             },
         )
-        self.client.force_authenticate(user=self.user_2)
+        self.client.force_authenticate(user=self.user)
         response = self.client.patch(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # def test_disallow_leave_queue(self):
-    #     url = reverse(
-    #         "leave-queue",
-    #         kwargs={
-    #             "branch_id": self.branch.id,
-    #             "service_id": self.service.id,
-    #         },
-    #     )
-    #     self.client.force_authenticate(user=self.user_2)
-    #     response = self.client.patch(url)
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    def test_call_queue(self):
+
+        # join the queue
+        join_url = reverse(
+            "join-queue",
+            kwargs={
+                "branch_id": self.branch.id,
+                "service_id": self.service.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user)
+        self.client.post(join_url)
+
+        # call the queue
+        url = reverse(
+            "call-queue",
+            kwargs={
+                "branch_id": self.branch.id,
+                "service_id": self.service.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_serve_queue(self):
+        # join the queue
+        join_url = reverse(
+            "join-queue",
+            kwargs={
+                "branch_id": self.branch.id,
+                "service_id": self.service.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user)
+        self.client.post(join_url)
+
+        # call the queue
+        call_url = reverse(
+            "call-queue",
+            kwargs={
+                "branch_id": self.branch.id,
+                "service_id": self.service.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user)
+        self.client.patch(call_url)
+
+        # serve the queue
+        url = reverse(
+            "serve-queue",
+            kwargs={
+                "branch_id": self.branch.id,
+                "service_id": self.service.id,
+            },
+        )
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

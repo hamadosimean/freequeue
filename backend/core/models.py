@@ -138,6 +138,46 @@ class Branch(TimeStampedModel):
         ]
 
 
+# ============================================
+# Branch Agents
+# ============================================
+
+
+class BranchAgent(TimeStampedModel):
+    branch = models.ForeignKey(
+        Branch,
+        on_delete=models.CASCADE,
+        related_name="branch_agent",
+        verbose_name=_("Branch"),
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="branch_agent",
+        verbose_name=_("User"),
+    )
+    is_active = models.BooleanField(default=True, verbose_name=_("Is active"))
+
+    def __str__(self):
+        return self.branch.name + " - " + self.user.get_full_name()
+
+    class Meta:
+        verbose_name = "Branch Agent"
+        verbose_name_plural = "Branch Agents"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["branch"]),
+            models.Index(fields=["user"]),
+            models.Index(fields=["is_active"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["branch", "user"],
+                name="unique_branch_agent",
+            ),
+        ]
+
+
 # =============================================
 # Payment model
 # =============================================

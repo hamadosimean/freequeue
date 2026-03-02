@@ -72,6 +72,11 @@ urlpatterns = [
     ),
     # queue
     path(
+        "branch/<uuid:branch_id>/service/<uuid:service_id>/queue",
+        views.QueueAPIView.as_view(),
+        name="queue",
+    ),
+    path(
         "branch/<uuid:branch_id>/service/<uuid:service_id>/join",
         views.JoinQueueAPIView.as_view(),
         name="join-queue",
@@ -80,5 +85,15 @@ urlpatterns = [
         "branch/<uuid:branch_id>/service/<uuid:service_id>/leave",
         views.LeaveQueueAPIView.as_view(),
         name="leave-queue",
+    ),
+    path(
+        "branch/<uuid:branch_id>/service/<uuid:service_id>/call",
+        views.CallQueueAPIView.as_view(),
+        name="call-queue",
+    ),
+    path(
+        "branch/<uuid:branch_id>/service/<uuid:service_id>/serve",
+        views.ServeQueueAPIView.as_view(),
+        name="serve-queue",
     ),
 ]

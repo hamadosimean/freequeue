@@ -593,14 +593,19 @@ class LeaveQueueAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def get_object(self, branch_id, service_id):
-        queue = get_object_or_404(
-            Queue,
-            service__branch_id=branch_id,
-            service_id=service_id,
-            user=self.request.user,
-            status="waiting",
-            date_joined=datetime.date.today(),
+        queue = (
+            Queue.objects.select_for_update()
+            .filter(
+                service__branch_id=branch_id,
+                service_id=service_id,
+                user=self.request.user,
+                status="waiting",
+                date_joined=datetime.date.today(),
+            )
+            .first()
         )
+        if not queue:
+            return None
         self.check_object_permissions(self.request, queue)
         return queue
 
@@ -613,6 +618,101 @@ class LeaveQueueAPIView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             queue.status = "canceled"
+            queue.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Something went wrong"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+class CallQueueAPIView(APIView):
+    """
+    Call Queue API View
+    PATCH: Call a queue
+    """
+
+    # permission_classes = [IsBranchAgent]
+    throttle_classes = [UserRateThrottle]
+
+    def get_object(self, branch_id, service_id):
+        queue = (
+            Queue.objects.select_for_update()
+            .filter(
+                service__branch_id=branch_id,
+                service_id=service_id,
+                status="waiting",
+                date_joined=datetime.date.today(),
+            )
+            .order_by("queue_number")
+            .first()
+        )
+        self.check_object_permissions(self.request, queue)
+        return queue
+
+    def patch(self, request, branch_id, service_id):
+        with transaction.atomic():
+            # check if there is called queue
+            called_queue = Queue.objects.filter(
+                service__branch_id=branch_id,
+                service_id=service_id,
+                status="called",
+                date_joined=datetime.date.today(),
+            ).first()
+            if called_queue:
+                return Response(
+                    {"detail": "There is a called queue, please serve it first"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # get the first queue waiting
+            queue = self.get_object(branch_id, service_id)
+            if not queue:
+                return Response(
+                    {"detail": "No queue to call"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            queue.status = "called"
+            queue.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Something went wrong"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+class ServeQueueAPIView(APIView):
+    """
+    Serve Queue API View
+    PATCH: Serve a queue
+    """
+
+    # permission_classes = [IsBranchAgent]
+    throttle_classes = [UserRateThrottle]
+
+    def get_object(self, branch_id, service_id):
+        queue = (
+            Queue.objects.select_for_update()
+            .filter(
+                service__branch_id=branch_id,
+                service_id=service_id,
+                status="called",
+                date_joined=datetime.date.today(),
+            )
+            .first()
+        )
+        self.check_object_permissions(self.request, queue)
+        return queue
+
+    def patch(self, request, branch_id, service_id):
+        with transaction.atomic():
+            queue = self.get_object(branch_id, service_id)
+            if not queue:
+                return Response(
+                    {"detail": "No queue to serve"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            queue.status = "served"
             queue.save()
             return Response(status=status.HTTP_200_OK)
         return Response(

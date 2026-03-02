@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import (
     Company,
     Branch,
+    BranchAgent,
     BranchInfos,
     MarketingImage,
     MarketingVideo,
@@ -27,6 +28,14 @@ class BranchAdmin(admin.ModelAdmin):
     list_display = ["name", "company", "is_active", "is_opened"]
     list_filter = ["company", "is_active", "is_opened"]
     search_fields = ["name", "description"]
+    ordering = ["-created_at"]
+
+
+@admin.register(BranchAgent)
+class BranchAgentAdmin(admin.ModelAdmin):
+    list_display = ["branch__name", "user__email", "is_active"]
+    list_filter = ["branch__name", "user__email", "is_active"]
+    search_fields = ["branch__name", "user__email"]
     ordering = ["-created_at"]
 
 
