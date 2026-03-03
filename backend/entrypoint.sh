@@ -16,5 +16,4 @@ echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
 echo "Starting Server..."
-# exec gunicorn -b 0.0.0.0:8000 --workers 3 --timeout 120 config.wsgi:application
 exec daphne -b 0.0.0.0 -p 8000 config.asgi:application

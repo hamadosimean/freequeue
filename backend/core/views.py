@@ -1,7 +1,6 @@
 import datetime
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
 from django.core.cache import cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -44,6 +43,7 @@ from .serializers import (
     BranchAgentSerializer,
 )
 from general_settings.constants import CACHE_TIMEOUT_MINUTES
+from .services import update_service_queues
 # Create your views here.
 
 
@@ -744,8 +744,9 @@ class JoinQueueAPIView(APIView):
                     queue_number=1,
                 )
             queue.refresh_from_db()
-            queue = queue.queue_number
-        return Response({"queue_number": queue}, status=status.HTTP_200_OK)
+            queue_number = queue.queue_number
+            update_service_queues(service_id=service_id)
+        return Response({"queue_number": queue_number}, status=status.HTTP_200_OK)
 
 
 class LeaveQueueAPIView(APIView):
@@ -784,6 +785,7 @@ class LeaveQueueAPIView(APIView):
                 )
             queue.status = "canceled"
             queue.save()
+            update_service_queues(service_id=service_id)
             return Response(status=status.HTTP_200_OK)
         return Response(
             {"detail": "Something went wrong"},
@@ -839,6 +841,7 @@ class CallQueueAPIView(APIView):
                 )
             queue.status = "called"
             queue.save()
+            update_service_queues(service_id=service_id)
             return Response(status=status.HTTP_200_OK)
         return Response(
             {"detail": "Something went wrong"},
@@ -879,6 +882,7 @@ class ServeQueueAPIView(APIView):
                 )
             queue.status = "served"
             queue.save()
+            update_service_queues(service_id=service_id)
             return Response(status=status.HTTP_200_OK)
         return Response(
             {"detail": "Something went wrong"},

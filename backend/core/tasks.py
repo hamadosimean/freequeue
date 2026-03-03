@@ -3,6 +3,9 @@ from django.utils import timezone
 from django.db import transaction
 from .models import Branch, Payment
 import logging
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from .models import Queue, Service
 
 logger = logging.getLogger(__name__)
 
