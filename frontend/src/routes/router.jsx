@@ -1,5 +1,15 @@
 import { createBrowserRouter } from "react-router-dom";
-import { Home, About, Dashboard, NotFound, Space } from "../pages";
+import {
+  Home,
+  About,
+  Dashboard,
+  NotFound,
+  Space,
+  Login,
+  Register,
+  ResetPassword,
+  ForgetPassword,
+} from "../pages";
 import { MainLayout, AuthLayout } from "@/components/layout";
 export const AppRoutes = createBrowserRouter([
   {
@@ -9,6 +19,32 @@ export const AppRoutes = createBrowserRouter([
       {
         index: true,
         element: <Home />,
+      },
+      {
+        path: "auth",
+        element: <AuthLayout />,
+        children: [
+          {
+            index: true,
+            element: <Login />,
+          },
+          {
+            path: "login",
+            element: <Login />,
+          },
+          {
+            path: "register",
+            element: <Register />,
+          },
+          {
+            path: "reset-password",
+            element: <ResetPassword />,
+          },
+          {
+            path: "forget-password",
+            element: <ForgetPassword />,
+          },
+        ],
       },
       {
         path: "about",
