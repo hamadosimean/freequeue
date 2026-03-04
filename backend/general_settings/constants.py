@@ -13,6 +13,11 @@ CACHE_TIMEOUT_MINUTES = 5
 OTP_EXPIRATION_TIME = 60
 OTP_MAX_ATTEMPTS = 3
 
+# Djoser email settings
+EMAIL_FRONTEND_PROTOCOL = "http"
+EMAIL_FRONTEND_DOMAIN = "localhost:5173"
+EMAIL_FRONTEND_SITE_NAME = "Free Queues"
+
 # Company domains
 COMPANY_DOMAINS = (
     ("health", "Health"),

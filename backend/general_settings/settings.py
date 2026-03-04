@@ -6,7 +6,11 @@ from .db import *
 from .installed_apps import *
 from .middleware import *
 from .static_settings import *
-
+from .constants import (
+    EMAIL_FRONTEND_PROTOCOL,
+    EMAIL_FRONTEND_DOMAIN,
+    EMAIL_FRONTEND_SITE_NAME,
+)
 # restframework settings
 
 REST_FRAMEWORK = {
@@ -79,10 +83,16 @@ DJOSER = {
     "SEND_ACTIVATION_EMAIL": True,
     "SET_PASSWORD_RETYPE": True,
     "PASSWORD_RESET_CONFIRM_RETYPE": True,
+    "LOGOUT_ON_PASSWORD_CHANGE": True,
+    "PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND": True,
+    "PASSWORD_CHANGED_EMAIL_CONFIRMATION": True,
+    "EMAIL_FRONTEND_PROTOCOL": EMAIL_FRONTEND_PROTOCOL,
+    "EMAIL_FRONTEND_DOMAIN": EMAIL_FRONTEND_DOMAIN,
+    "EMAIL_FRONTEND_SITE_NAME": EMAIL_FRONTEND_SITE_NAME,
     "JWT_AUTH": True,
-    "PASSWORD_RESET_CONFIRM_URL": "password/reset/confirm/?uid={uid}&token={token}",
-    "USERNAME_RESET_CONFIRM_URL": "username/reset/confirm/?uid={uid}&token={token}",
-    "ACTIVATION_URL": "activate/?uid={uid}&token={token}",
+    "PASSWORD_RESET_CONFIRM_URL": "auth/password/reset/confirm/?uid={uid}&token={token}",
+    "USERNAME_RESET_CONFIRM_URL": "auth/username/reset/confirm/?uid={uid}&token={token}",
+    "ACTIVATION_URL": "auth/activate/?uid={uid}&token={token}",
     "SERIALIZERS": {
         "user_create": "accounts.serializers.CustomUserCreateSerializer",
         "user": "accounts.serializers.CustomUserSerializer",
@@ -94,7 +104,7 @@ DJOSER = {
 # Cors settings
 CORS_ALLOWED_ORIGINS = [
     f"http://{host}:{env.int('APP_PORT')}" for host in env.list("ALLOWED_HOSTS")
-]
+] + ["http://localhost:5173"]
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
 
