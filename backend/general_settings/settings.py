@@ -38,8 +38,8 @@ REST_FRAMEWORK = {
     ],
     # rate limite
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "100/day",
-        "user": "1000/day",
+        "anon": "10000/hour",
+        "user": "10000/hour",
         "send_otp": "10/minute",
         "verify_otp": "10/minute",
     },
@@ -83,8 +83,8 @@ DJOSER = {
     "SEND_ACTIVATION_EMAIL": True,
     "SET_PASSWORD_RETYPE": True,
     "PASSWORD_RESET_CONFIRM_RETYPE": True,
-    "LOGOUT_ON_PASSWORD_CHANGE": True,
-    "PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND": True,
+    "LOGOUT_ON_PASSWORD_CHANGE": False,
+    # "PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND": True,
     "PASSWORD_CHANGED_EMAIL_CONFIRMATION": True,
     "EMAIL_FRONTEND_PROTOCOL": EMAIL_FRONTEND_PROTOCOL,
     "EMAIL_FRONTEND_DOMAIN": EMAIL_FRONTEND_DOMAIN,

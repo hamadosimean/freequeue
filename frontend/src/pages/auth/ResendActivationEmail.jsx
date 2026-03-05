@@ -3,28 +3,28 @@ import { useLang } from "@/context/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "@/services/api/authService";
 import { Button, Input } from "@/component/common";
-import { AppRoutes } from "@/routes/routes";
 import toast from "react-hot-toast";
+import { AppRoutes } from "@/routes/routes";
 import { LoadingSpinner } from "@/component/ui";
-export default function ForgetPassword() {
+function ResendActivationEmail() {
   const { t } = useLang();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const handleEmailSend = async () => {
+
+  const handleResendActivationEmail = async () => {
     try {
       setLoading(true);
-      const response = await authApi.resetPassword({
+      const response = await authApi.resendActivationEmail({
         email,
       });
       if (response.status === 204 || response.status === 200 || response.data) {
-        toast.success(t("emailSent"));
+        toast.success(t("passwordResent"));
         setEmail("");
         setTimeout(() => navigate(AppRoutes.activateMessage), 3000);
       }
     } catch (err) {
-      console.error("Forget password failed:", err);
-
+      console.error("Resend activation email failed:", err);
       toast.error(err.response?.data?.detail || "Email not sent");
     } finally {
       setLoading(false);
@@ -40,7 +40,7 @@ export default function ForgetPassword() {
       <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 ring-2 ring-gray-300 dark:ring-gray-600">
         <div className="text-center space-y-2">
           <p className="text-base md:text-xl font-bold text-gray-900 dark:text-gray-200">
-            {t("sendResetLink")}
+            {t("resendActivationEmail")}
           </p>
         </div>
         <div className="space-y-4">
@@ -54,11 +54,16 @@ export default function ForgetPassword() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-          <Button onClick={handleEmailSend} fullWidth disabled={loading}>
-            {t("send")}
+          <Button onClick={handleResendActivationEmail} fullWidth>
+            {t("resendActivationEmail")}
+          </Button>
+          <Button onClick={() => navigate(AppRoutes.login)} fullWidth>
+            {t("goToLogin")}
           </Button>
         </div>
       </div>
     </div>
   );
 }
+
+export default ResendActivationEmail;

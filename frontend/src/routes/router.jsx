@@ -9,59 +9,76 @@ import {
   Register,
   ResetPassword,
   ForgetPassword,
+  Activate,
+  ActivateMessage,
+  ResendActivationEmail,
+  ConfirmedPasswordReset,
 } from "../pages";
-import { MainLayout, AuthLayout } from "@/components/layout";
-export const AppRoutes = createBrowserRouter([
+import { MainLayout, AuthLayout } from "@/component/layout";
+import { AppRoutes } from "./routes";
+export const AppRouter = createBrowserRouter([
   {
-    path: "/",
+    path: AppRoutes.home,
     element: <MainLayout />,
     children: [
       {
         index: true,
         element: <Home />,
       },
+
       {
-        path: "auth",
-        element: <AuthLayout />,
-        children: [
-          {
-            index: true,
-            element: <Login />,
-          },
-          {
-            path: "login",
-            element: <Login />,
-          },
-          {
-            path: "register",
-            element: <Register />,
-          },
-          {
-            path: "reset-password",
-            element: <ResetPassword />,
-          },
-          {
-            path: "forget-password",
-            element: <ForgetPassword />,
-          },
-        ],
+        index: true,
+        element: <Login />,
       },
       {
-        path: "about",
+        path: AppRoutes.login,
+        element: <Login />,
+      },
+      {
+        path: AppRoutes.register,
+        element: <Register />,
+      },
+      {
+        path: AppRoutes.activate,
+        element: <Activate />,
+      },
+      {
+        path: AppRoutes.activateMessage,
+        element: <ActivateMessage />,
+      },
+      {
+        path: AppRoutes.resendActivationEmail,
+        element: <ResendActivationEmail />,
+      },
+      {
+        path: AppRoutes.resetPassword,
+        element: <ResetPassword />,
+      },
+      {
+        path: AppRoutes.confirmResetPassword,
+        element: <ConfirmedPasswordReset />,
+      },
+      {
+        path: AppRoutes.forgetPassword,
+        element: <ForgetPassword />,
+      },
+
+      {
+        path: AppRoutes.about,
         element: <About />,
       },
       {
-        path: "dashboard",
+        path: AppRoutes.dashboard,
         element: <Dashboard />,
       },
       {
-        path: "space",
+        path: AppRoutes.space,
         element: <Space />,
       },
     ],
   },
   {
-    path: "*",
+    path: AppRoutes.notFound,
     element: <NotFound />,
   },
 ]);

@@ -1,5 +1,5 @@
 import React from "react";
-export const Button = ({
+export default function Button({
   children,
   variant = "primary",
   size = "md",
@@ -8,7 +8,7 @@ export const Button = ({
   fullWidth = false,
   className = "",
   ...props
-}) => {
+}) {
   const baseClasses =
     "font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2";
 
@@ -33,6 +33,7 @@ export const Button = ({
     ${fullWidth ? "w-full" : ""}
     ${disabled ? "opacity-50 cursor-not-allowed" : ""}
     ${className}
+    cursor-pointer
   `;
 
   return (
@@ -45,4 +46,4 @@ export const Button = ({
       {children}
     </button>
   );
-};
+}

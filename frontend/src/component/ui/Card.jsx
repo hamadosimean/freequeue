@@ -1,11 +1,11 @@
 import React from "react";
 
-export const Card = ({
+export default function Card({
   children,
   className = "",
   padding = true,
   ...props
-}) => {
+}) {
   return (
     <div
       className={`
@@ -18,4 +18,4 @@ export const Card = ({
       {children}
     </div>
   );
-};
+}
