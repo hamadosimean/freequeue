@@ -13,6 +13,11 @@ import {
   ActivateMessage,
   ResendActivationEmail,
   ConfirmedPasswordReset,
+  Contact,
+  TrustCenter,
+  Privacy,
+  Abuse,
+  Cookies,
 } from "../pages";
 import { MainLayout, AuthLayout } from "@/component/layout";
 import { AppRoutes } from "./routes";
@@ -25,7 +30,26 @@ export const AppRouter = createBrowserRouter([
         index: true,
         element: <Home />,
       },
-
+      {
+        path: AppRoutes.contact,
+        element: <Contact />,
+      },
+      {
+        path: AppRoutes.trustCenter,
+        element: <TrustCenter />,
+      },
+      {
+        path: AppRoutes.privacy,
+        element: <Privacy />,
+      },
+      {
+        path: AppRoutes.abuse,
+        element: <Abuse />,
+      },
+      {
+        path: AppRoutes.cookies,
+        element: <Cookies />,
+      },
       {
         index: true,
         element: <Login />,

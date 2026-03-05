@@ -1,2 +1,3 @@
-export { default as authApi } from "./api/authService";
-export { default as userApi } from "./api/userService";
+export { authApi } from "./api/authService";
+export { userApi } from "./api/userService";
+export { commonApi } from "./api/commonService";

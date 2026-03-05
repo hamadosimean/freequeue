@@ -15,5 +15,12 @@ export const AppRoutes = {
   dashboard: "/dashboard",
   about: "/about",
   space: "/space",
+  contact: "/contact",
+  privacy: "/privacy",
+  terms: "/terms",
+  cookies: "/cookies",
+  trustCenter: "/trust-center",
+  gdpr: "/gdpr",
+  abuse: "/abuse",
   notFound: "*",
 };

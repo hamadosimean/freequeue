@@ -6,8 +6,8 @@ import {
   useEffect,
   useState,
 } from "react";
-import { userApi } from "../services/api/userService";
-import { authApi } from "../services/api/authService";
+import { userApi } from "@/services/api/userService";
+import { authApi } from "@/services/api/authService";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
