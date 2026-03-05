@@ -200,3 +200,55 @@ class UserSettings(TimeStampedModel):
 
     def __str__(self):
         return f"{self.user.get_full_name()} - {self.user.email}"
+
+
+class Contact(TimeStampedModel):
+    """
+    Model for contact form submissions.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    full_name = models.CharField(
+        max_length=100,
+        verbose_name=_("Full name"),
+        help_text=_("Full name of the sender"),
+    )
+    email = models.EmailField(
+        max_length=254,
+        verbose_name=_("Email"),
+        help_text=_("Email address of the sender"),
+    )
+    phone_number = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        verbose_name=_("Phone number"),
+        help_text=_("Phone number of the sender"),
+    )
+    company = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        verbose_name=_("Company"),
+        help_text=_("Company of the sender"),
+    )
+    subject = models.CharField(
+        max_length=200,
+        verbose_name=_("Subject"),
+        help_text=_("Subject of the message"),
+    )
+    message = models.TextField(
+        verbose_name=_("Message"),
+        help_text=_("Message of the sender"),
+    )
+
+    def __str__(self):
+        return f"{self.subject} - {self.full_name}"
+
+    class Meta:
+        verbose_name = _("Contact")
+        verbose_name_plural = _("Contacts")
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["created_at"]),
+        ]

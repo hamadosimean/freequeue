@@ -8,9 +8,9 @@ function Contact() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
-    name: "",
+    full_name: "",
     email: "",
-    phone: "",
+    phone_number: "",
     company: "",
     subject: "",
     message: "",
@@ -29,15 +29,15 @@ function Contact() {
         toast.success("Message sent successfully!");
       }
       setFormData({
-        name: "",
+        full_name: "",
         email: "",
-        phone: "",
+        phone_number: "",
         company: "",
         subject: "",
         message: "",
       });
     } catch (error) {
-      toast.error("Failed to send message");
+      toast.error("Failed to send message, error ", error);
       setError(error);
     } finally {
       setLoading(false);
@@ -76,9 +76,9 @@ function Contact() {
             </label>
             <input
               type="text"
-              id="name"
-              name="name"
-              value={formData.name}
+              id="full_name"
+              name="full_name"
+              value={formData.full_name}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition"
@@ -114,9 +114,9 @@ function Contact() {
             </label>
             <input
               type="text"
-              id="phone"
-              name="phone"
-              value={formData.phone}
+              id="phone_number"
+              name="phone_number"
+              value={formData.phone_number}
               onChange={handleChange}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition"
             />

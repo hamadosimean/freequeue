@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from django.utils.translation import gettext_lazy as _
-from .models import UserSettings
+from .models import UserSettings, Contact
 
 User = get_user_model()
 
@@ -93,3 +93,22 @@ class UserSettingsSerializer(serializers.ModelSerializer):
             "reminder_minutes",
         )
         read_only_fields = ["id"]
+
+
+# Contact serializer
+class ContactSerializer(serializers.ModelSerializer):
+    """Contact serializer"""
+
+    class Meta:
+        model = Contact
+        fields = (
+            "id",
+            "full_name",
+            "email",
+            "phone_number",
+            "company",
+            "subject",
+            "message",
+            "created_at",
+        )
+        read_only_fields = ["id", "created_at"]

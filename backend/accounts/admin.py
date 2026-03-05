@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, OTP
+from .models import CustomUser, OTP, Contact
 from general_settings.constants import APP_NAME
 
 admin.site.site_header = APP_NAME
@@ -103,4 +103,44 @@ class OTPAdmin(admin.ModelAdmin):
         "is_verified",
         "code",
         "user",
+    )
+
+
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    list_display = (
+        "full_name",
+        "email",
+        "phone_number",
+        "company",
+        "subject",
+        "message",
+        "created_at",
+    )
+    search_fields = (
+        "full_name",
+        "email",
+        "phone_number",
+        "company",
+        "subject",
+        "message",
+    )
+    list_display_links = (
+        "full_name",
+        "email",
+        "phone_number",
+        "company",
+        "subject",
+        "message",
+    )
+    list_filter = ("created_at",)
+    ordering = ("-created_at",)
+    readonly_fields = (
+        "full_name",
+        "email",
+        "phone_number",
+        "company",
+        "subject",
+        "message",
+        "created_at",
     )

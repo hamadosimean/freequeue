@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.mail import send_mail
 import requests
 from urllib.parse import quote_plus
 import logging
@@ -64,3 +65,21 @@ def send_sms(phone_number, message):
         logging.error(f"Error sending SMS: {e}")
 
     return send_status
+
+
+def send_email(subject, message, recipient_email):
+    """
+    Send email to the given recipient.
+    """
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [recipient_email],
+            fail_silently=False,
+        )
+        return True
+    except Exception as e:
+        logging.error(f"Error sending email: {e}")
+        return False

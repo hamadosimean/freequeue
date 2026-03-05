@@ -16,11 +16,13 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 
 # local
 from .models import OTP, CustomUser, UserSettings
-from .utils import send_otp
+from rest_framework.throttling import AnonRateThrottle
+from .utils import send_otp, send_email
 from .serializers import (
     SendOTPSerializer,
     VerifyOTPSerializer,
     UserSettingsSerializer,
+    ContactSerializer,
 )
 from general_settings.throttles import OTPVerifyThrottle, OTPSendThrottle
 from general_settings.constants import OTP_MAX_ATTEMPTS
@@ -224,4 +226,40 @@ class UserSettingsAPIView(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ContactAPIView(APIView):
+    """
+    View to handle contact form submission.
+    """
+
+    permission_classes = [AllowAny]
+    throttle_classes = [AnonRateThrottle]
+
+    def post(self, request):
+        serializer = ContactSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            with transaction.atomic():
+                contact = serializer.save()
+                send_email(
+                    to_email=contact.email,
+                    subject="FreeQueues - Contact Form Submission Confirmation",
+                    message=f"""
+                            Hello {contact.full_name},
+
+                            Thank you for reaching out to FreeQueues! We have received your message and our team will review it promptly. 
+
+                            You can expect a response within 1–2 business days. In the meantime, if your inquiry is urgent, feel free to reply to this email directly.
+
+                            We appreciate your interest and look forward to assisting you.
+
+                            Best regards,
+                            The FreeQueues Team
+                            """,
+                )
+            return Response(
+                {"detail": "Contact form submitted successfully"},
+                status=status.HTTP_200_OK,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
