@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { useLang } from "@/context/LanguageContext";
 import { AppRoutes } from "@/routes/routes";
+
 function NavBar() {
-  const { t } = useLang();
+  const { t, changeLang } = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navStyle = ({ isActive }) =>
@@ -14,7 +15,7 @@ function NavBar() {
     }`;
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm">
+    <header className="bg-white dark:bg-gray-800 shadow-sm ring">
       <nav className="container mx-auto px-4 h-20 flex items-center justify-between">
         {/* Logo */}
         <Link
@@ -31,11 +32,13 @@ function NavBar() {
               {t("home")}
             </NavLink>
           </li>
+
           <li>
             <NavLink to={AppRoutes.about} className={navStyle}>
               {t("about")}
             </NavLink>
           </li>
+
           <li>
             <NavLink to={AppRoutes.contact} className={navStyle}>
               {t("contact")}
@@ -43,22 +46,30 @@ function NavBar() {
           </li>
         </ul>
 
-        {/* Desktop Auth */}
-        <ul className="hidden md:flex items-center space-x-6">
-          <li>
-            <NavLink to={AppRoutes.login} className={navStyle}>
-              {t("login")}
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to={AppRoutes.register}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-            >
-              {t("register")}
-            </NavLink>
-          </li>
-        </ul>
+        {/* Right section */}
+        <div className="hidden md:flex items-center space-x-6">
+          {/* Auth */}
+          <NavLink to={AppRoutes.login} className={navStyle}>
+            {t("login")}
+          </NavLink>
+
+          <NavLink
+            to={AppRoutes.register}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            {t("register")}
+          </NavLink>
+
+          {/* Language chooser */}
+          <select
+            onChange={(e) => changeLang(e.target.value)}
+            className="border rounded-md px-2 py-1 text-sm bg-white dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
+          >
+            <option value="en">EN</option>
+            <option value="fr">FR</option>
+            <option value="ar">AR</option>
+          </select>
+        </div>
 
         {/* Mobile Button */}
         <button
@@ -123,6 +134,17 @@ function NavBar() {
               >
                 {t("register")}
               </NavLink>
+
+              {/* Language chooser mobile */}
+              <li>
+                <select
+                  onChange={(e) => changeLang(e.target.value)}
+                  className="border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
+                >
+                  <option value="fr">FR</option>
+                  <option value="ar">AR</option>
+                </select>
+              </li>
             </div>
           </ul>
         </div>

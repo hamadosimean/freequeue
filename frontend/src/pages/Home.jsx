@@ -1,7 +1,12 @@
 import React from "react";
-
+import { Hero, Services } from "@/component/ui";
 function Home() {
-  return <div>Home</div>;
+  return (
+    <div>
+      <Hero />
+      <Services />
+    </div>
+  );
 }
 
 export default Home;

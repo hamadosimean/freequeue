@@ -4,7 +4,7 @@ import { Input, Button } from "@/component/common";
 import { authApi } from "@/services/api/authService";
 import { useLang } from "@/context/LanguageContext";
 import { AppRoutes } from "@/routes/routes";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { ErrorDisplay, LoadingSpinner } from "@/component/ui";
 function Register() {
   const { t } = useLang();
@@ -88,7 +88,8 @@ function Register() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[80vh] px-4">
+    <div className="flex items-center justify-center min-h-[80vh] px-4 my-10">
+      <Toaster />
       <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 ring-2 ring-gray-300 dark:ring-gray-600">
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">

@@ -109,6 +109,54 @@ const translations = {
     contactMessagePlaceholder: "Write your message here",
     contactSubmit: "Send Message",
     contactDirectEmail: "Or email us directly at",
+    heroTitle: "Skip the line. Join the queue from anywhere.",
+
+    heroSubtitle:
+      "FreeQueues lets you take a queue remotely or walk in and track your waiting time in real time.",
+
+    getStarted: "Get Started",
+
+    learnMore: "Learn More",
+
+    heroFeatureOneTitle: "Join From Your Phone",
+    heroFeatureOneText:
+      "Take your place in the queue online without being physically present.",
+
+    heroFeatureTwoTitle: "Track Waiting Time",
+    heroFeatureTwoText:
+      "See your position and estimated waiting time in real time.",
+
+    heroFeatureThreeTitle: "Walk-In or Online",
+    heroFeatureThreeText:
+      "Whether you join online or walk in, the system manages the same queue seamlessly.",
+
+    servicesTitle: "Where FreeQueues Can Be Used",
+    servicesSubtitle:
+      "FreeQueues helps organizations manage waiting lines efficiently both online and walk-in.",
+
+    serviceHealthcareTitle: "Healthcare",
+    serviceHealthcareText:
+      "Patients can join queues for clinics and hospitals without waiting in crowded waiting rooms.",
+
+    serviceBankingTitle: "Banking",
+    serviceBankingText:
+      "Customers can take a queue number remotely and arrive when it's their turn.",
+
+    serviceGovernmentTitle: "Government Services",
+    serviceGovernmentText:
+      "Citizens can schedule and manage queues for public offices and municipal services.",
+
+    serviceAdministrationTitle: "Administrative Offices",
+    serviceAdministrationText:
+      "Manage queues for document processing, registrations, and office visits.",
+
+    serviceCustomerSupportTitle: "Customer Support",
+    serviceCustomerSupportText:
+      "Businesses can organize service desks and support queues more efficiently.",
+
+    serviceWalkInTitle: "Walk-In Queues",
+    serviceWalkInText:
+      "People can also join the queue directly on site. Online or walk-in, it's the same system.",
   },
   fr: {
     home: "Accueil",
@@ -222,6 +270,48 @@ const translations = {
     contactMessagePlaceholder: "Écrivez votre message ici",
     contactSubmit: "Envoyer le message",
     contactDirectEmail: "Ou envoyez-nous directement par email",
+    heroTitle: "Évitez la file d'attente. Rejoignez la queue à distance.",
+    heroSubtitle:
+      "FreeQueues vous permet de prendre un ticket à distance ou de venir sur place et de suivre votre temps d'attente en temps réel.",
+    getStarted: "Commencer",
+    learnMore: "En savoir plus",
+    heroFeatureOneTitle: "Rejoignez depuis votre téléphone",
+    heroFeatureOneText:
+      "Prenez votre place dans la file en ligne sans être présent physiquement.",
+    heroFeatureTwoTitle: "Suivez le temps d'attente",
+    heroFeatureTwoText:
+      "Voyez votre position et le temps d'attente estimé en temps réel.",
+    heroFeatureThreeTitle: "Sur place ou en ligne",
+    heroFeatureThreeText:
+      "Que vous rejoigniez en ligne ou sur place, le système gère la même file d'attente de manière transparente.",
+
+    serviceHealthcareTitle: "Santé",
+    serviceHealthcareText:
+      "Les patients peuvent rejoindre les files d'attente des cliniques et hôpitaux sans attendre dans des salles d'attente bondées.",
+
+    serviceBankingTitle: "Services bancaires",
+    serviceBankingText:
+      "Les clients peuvent prendre un numéro d'attente à distance et arriver quand leur tour vient.",
+
+    serviceGovernmentTitle: "Services gouvernementaux",
+    serviceGovernmentText:
+      "Les citoyens peuvent planifier et gérer les files d'attente pour les bureaux publics et les services municipaux.",
+
+    serviceAdministrationTitle: "Bureaux administratifs",
+    serviceAdministrationText:
+      "Gérez les files d'attente pour le traitement des documents, les inscriptions et les visites de bureau.",
+
+    serviceCustomerSupportTitle: "Service client",
+    serviceCustomerSupportText:
+      "Les entreprises peuvent organiser plus efficacement les bureaux de service et les files d'attente d'assistance.",
+
+    serviceWalkInTitle: "Files d'attente sur place",
+    serviceWalkInText:
+      "Les personnes peuvent également rejoindre la file d'attente directement sur place. En ligne ou sur place, c'est le même système.",
+
+    servicesTitle: "Où FreeQueues peut être utilisé",
+    servicesSubtitle:
+      "FreeQueues aide les organisations à gérer efficacement les files d'attente, que ce soit en ligne ou sur place.",
   },
   ar: {
     home: "الرئيسية",
@@ -332,6 +422,46 @@ const translations = {
     contactMessagePlaceholder: "اكتب رسالتك هنا",
     contactSubmit: "إرسال الرسالة",
     contactDirectEmail: "أو راسلنا مباشرة عبر البريد الإلكتروني على",
+    heroTitle: "تخطَّ الطابور. انضم إلى قائمة الانتظار من أي مكان.",
+    heroSubtitle:
+      "يتيح لك FreeQueues أخذ تذكرة طابور عن بُعد أو الدخول مباشرة وتتبع وقت انتظارك في الوقت الفعلي.",
+    getStarted: "ابدأ الآن",
+    learnMore: "اعرف المزيد",
+    heroFeatureOneTitle: "انضم من هاتفك",
+    heroFeatureOneText:
+      "احجز مكانك في قائمة الانتظار أونلاين دون الحاجة للتواجد الفعلي.",
+    heroFeatureTwoTitle: "تتبع وقت الانتظار",
+    heroFeatureTwoText: "شاهد موقعك ووقت الانتظار المقدر في الوقت الفعلي.",
+    heroFeatureThreeTitle: "دخول مباشر أو أونلاين",
+    heroFeatureThreeText:
+      "سواء انضممت أونلاين أو جئت مباشرة، يدير النظام قائمة الانتظار نفسها بسلاسة.",
+    servicesTitle: "أين يمكن استخدام FreeQueues",
+    servicesSubtitle:
+      "يساعد FreeQueues المؤسسات على إدارة طوابير الانتظار بكفاءة سواء كان ذلك عبر الإنترنت أو بالدخول المباشر.",
+
+    serviceHealthcareTitle: "الرعاية الصحية",
+    serviceHealthcareText:
+      "يمكن للمرضى الانضمام إلى طوابير العيادات والمستشفيات دون الانتظار في غرف الانتظار المزدحمة.",
+
+    serviceBankingTitle: "الخدمات المصرفية",
+    serviceBankingText:
+      "يمكن للعملاء أخذ رقم طابور عن بُعد والحضور عندما يحين دورهم.",
+
+    serviceGovernmentTitle: "الخدمات الحكومية",
+    serviceGovernmentText:
+      "يمكن للمواطنين جدولة وإدارة الطوابير للمكاتب العامة والخدمات البلدية.",
+
+    serviceAdministrationTitle: "المكاتب الإدارية",
+    serviceAdministrationText:
+      "إدارة طوابير معالجة المستندات والتسجيلات والزيارات المكتبية.",
+
+    serviceCustomerSupportTitle: "دعم العملاء",
+    serviceCustomerSupportText:
+      "يمكن للشركات تنظيم مكاتب الخدمة وطوابير الدعم بشكل أكثر كفاءة.",
+
+    serviceWalkInTitle: "طوابير الدخول المباشر",
+    serviceWalkInText:
+      "يمكن للأشخاص أيضًا الانضمام إلى الطابور مباشرة في الموقع. عبر الإنترنت أو دخول مباشر، إنه نفس النظام.",
   },
 };
 
