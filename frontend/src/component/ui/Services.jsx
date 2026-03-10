@@ -49,7 +49,7 @@ function Services() {
     <section className="container mx-auto px-4 py-20">
       {/* Title */}
       <div className="max-w-3xl mx-auto text-center mb-16">
-        <h2 className="text-xl md:text-4xl font-extrabold text-gray-900">
+        <h2 className="text-xl md:text-6xl font-extrabold text-gray-900 ">
           {t("servicesTitle")}
         </h2>
 

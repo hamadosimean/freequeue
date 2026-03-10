@@ -157,6 +157,10 @@ const translations = {
     serviceWalkInTitle: "Walk-In Queues",
     serviceWalkInText:
       "People can also join the queue directly on site. Online or walk-in, it's the same system.",
+
+    pricingTitle: "Pricing",
+    pricingSubtitle:
+      "Discover our flexible pricing plans designed to meet your organization's needs.",
   },
   fr: {
     home: "Accueil",
@@ -312,6 +316,9 @@ const translations = {
     servicesTitle: "Où FreeQueues peut être utilisé",
     servicesSubtitle:
       "FreeQueues aide les organisations à gérer efficacement les files d'attente, que ce soit en ligne ou sur place.",
+    pricingTitle: "Tarification",
+    pricingSubtitle:
+      "Découvrez nos plans tarifaires flexibles conçus pour répondre aux besoins de votre organisation.",
   },
   ar: {
     home: "الرئيسية",
@@ -462,6 +469,9 @@ const translations = {
     serviceWalkInTitle: "طوابير الدخول المباشر",
     serviceWalkInText:
       "يمكن للأشخاص أيضًا الانضمام إلى الطابور مباشرة في الموقع. عبر الإنترنت أو دخول مباشر، إنه نفس النظام.",
+    pricing: "التسعير",
+    pricingTitle: "التسعير",
+    pricingSubtitle: "اكتشف خطط الأسعار المرنة المصممة لتلبية احتياجات مؤسستك.",
   },
 };
 

@@ -18,9 +18,15 @@ import {
   Privacy,
   Abuse,
   Cookies,
+  Pricing,
+  Company,
+  Agency,
+  Settings,
 } from "../pages";
-import { MainLayout, AuthLayout } from "@/component/layout";
+import { MainLayout, AuthLayout, SideBar } from "@/component/layout";
 import { AppRoutes } from "./routes";
+import { loggedRoutes } from "./loggedRoutes";
+
 export const AppRouter = createBrowserRouter([
   {
     path: AppRoutes.home,
@@ -49,6 +55,10 @@ export const AppRouter = createBrowserRouter([
       {
         path: AppRoutes.cookies,
         element: <Cookies />,
+      },
+      {
+        path: AppRoutes.pricing,
+        element: <Pricing />,
       },
       {
         index: true,
@@ -92,12 +102,14 @@ export const AppRouter = createBrowserRouter([
         element: <About />,
       },
       {
-        path: AppRoutes.dashboard,
-        element: <Dashboard />,
-      },
-      {
         path: AppRoutes.space,
-        element: <Space />,
+        element: <SideBar routes={loggedRoutes} />,
+        children: [
+          { index: true, path: AppRoutes.company, element: <Company /> },
+          { path: AppRoutes.agency, element: <Agency /> },
+          { path: AppRoutes.settings, element: <Settings /> },
+          { path: AppRoutes.dashboard, element: <Dashboard /> },
+        ],
       },
     ],
   },

@@ -12,9 +12,7 @@ export const AppRoutes = {
   resetPasswordMessage: "/auth/reset-password-message",
   // main routes
   home: "/",
-  dashboard: "/dashboard",
   about: "/about",
-  space: "/space",
   contact: "/contact",
   privacy: "/privacy",
   terms: "/terms",
@@ -22,5 +20,12 @@ export const AppRoutes = {
   trustCenter: "/trust-center",
   gdpr: "/gdpr",
   abuse: "/abuse",
+  pricing: "/pricing",
   notFound: "*",
+  // core routes
+  space: "/space",
+  dashboard: "/space/dashboard",
+  company: "/space/company",
+  agency: "/space/agency",
+  settings: "/space/settings",
 };

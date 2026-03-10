@@ -1,11 +1,19 @@
 import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { useLang } from "@/context/LanguageContext";
+
 import { AppRoutes } from "@/routes/routes";
 
 function NavBar() {
   const { t, changeLang } = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const navLinks = [
+    { to: AppRoutes.home, label: t("home") },
+    { to: AppRoutes.about, label: t("about") },
+    { to: AppRoutes.contact, label: t("contact") },
+    { to: AppRoutes.pricing, label: t("pricingTitle") },
+  ];
 
   const navStyle = ({ isActive }) =>
     `text-base font-medium transition ${
@@ -15,7 +23,7 @@ function NavBar() {
     }`;
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm ring">
+    <header className="bg-white dark:bg-gray-800 shadow-sm ring-1 ring-gray-300 dark:ring-gray-800  ">
       <nav className="container mx-auto px-4 h-20 flex items-center justify-between">
         {/* Logo */}
         <Link
@@ -27,23 +35,13 @@ function NavBar() {
 
         {/* Desktop Menu */}
         <ul className="hidden md:flex items-center space-x-10">
-          <li>
-            <NavLink to="/" className={navStyle}>
-              {t("home")}
-            </NavLink>
-          </li>
-
-          <li>
-            <NavLink to={AppRoutes.about} className={navStyle}>
-              {t("about")}
-            </NavLink>
-          </li>
-
-          <li>
-            <NavLink to={AppRoutes.contact} className={navStyle}>
-              {t("contact")}
-            </NavLink>
-          </li>
+          {navLinks.map((link) => (
+            <li key={link.to}>
+              <NavLink to={link.to} className={navStyle}>
+                {link.label}
+              </NavLink>
+            </li>
+          ))}
         </ul>
 
         {/* Right section */}
@@ -86,37 +84,19 @@ function NavBar() {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-800 border-t">
+        <div className="md:hidden bg-white border-t border-gray-300 dark:bg-gray-800 dark:border-gray-800">
           <ul className="flex flex-col items-center space-y-6 py-6">
-            <li>
-              <NavLink
-                to="/"
-                className={navStyle}
-                onClick={() => setMenuOpen(false)}
-              >
-                {t("home")}
-              </NavLink>
-            </li>
-
-            <li>
-              <NavLink
-                to={AppRoutes.about}
-                className={navStyle}
-                onClick={() => setMenuOpen(false)}
-              >
-                {t("about")}
-              </NavLink>
-            </li>
-
-            <li>
-              <NavLink
-                to={AppRoutes.contact}
-                className={navStyle}
-                onClick={() => setMenuOpen(false)}
-              >
-                {t("contact")}
-              </NavLink>
-            </li>
+            {navLinks.map((link) => (
+              <li key={link.to}>
+                <NavLink
+                  to={link.to}
+                  className={navStyle}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {link.label}
+                </NavLink>
+              </li>
+            ))}
 
             <div className="border-t w-2/3 pt-4 flex flex-col items-center space-y-4">
               <NavLink
@@ -141,6 +121,8 @@ function NavBar() {
                   onChange={(e) => changeLang(e.target.value)}
                   className="border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
                 >
+                  {" "}
+                  <option value="en">EN</option>
                   <option value="fr">FR</option>
                   <option value="ar">AR</option>
                 </select>
