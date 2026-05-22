@@ -24,8 +24,8 @@ export const AppRoutes = {
   notFound: "*",
   // core routes
   space: "/space",
-  dashboard: "/space/dashboard",
-  company: "/space/company",
-  agency: "/space/agency",
-  settings: "/space/settings",
+  dashboard: (space) => `${space}/dashboard`,
+  company: (space) => `${space}/company`,
+  agency: (space) => `${space}/agency`,
+  settings: (space) => `${space}/settings`,
 };

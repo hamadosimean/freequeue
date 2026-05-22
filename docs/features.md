@@ -4,12 +4,12 @@ FreeQueues provides a robust set of features tailored for both business administ
 
 ## For Businesses
 
-### 1. Multi-Branch Management
--   Manage multiple business locations from a single dashboard.
--   Configure specific hours and services for each branch.
+### 1. Multi-Company Management
+-   Manage multiple companies and operations from a single dashboard.
+-   Configure specific hours and services for each company.
 
 ### 2. Service Point Configuration
--   Create and manage counters (gichets/counters) within branches.
+-   Create and manage counters (gichets/counters) within companies.
 -   Assign specific staff members to counters.
 -   Set counter-specific services (e.g., "Counter 1 - Payments only").
 
@@ -25,7 +25,7 @@ FreeQueues provides a robust set of features tailored for both business administ
 ## For Customers
 
 ### 1. Remote Queue Joining
--   Browse businesses and branches on the map or list view.
+-   Browse companies and services on the map or list view.
 -   Join a queue from anywhere via the Web or Mobile app.
 -   Receive an instant digital ticket with your position.
 

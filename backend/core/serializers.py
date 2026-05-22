@@ -1,15 +1,14 @@
 from rest_framework import serializers
 from .models import (
     Company,
-    Branch,
-    BranchInfos,
+    CompanyInfos,
     MarketingImage,
     MarketingVideo,
     Service,
     Queue,
     Payment,
-    BranchSettings,
-    BranchAgent,
+    CompanySettings,
+    Agent,
 )
 
 # ==============================================
@@ -37,32 +36,6 @@ class CompanySerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at", "is_active"]
 
 
-# ==============================================
-# Branch Serializers
-# ==============================================
-
-
-class BranchSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Branch
-        fields = [
-            "id",
-            "name",
-            "description",
-            "address",
-            "phone_number",
-            "email",
-            "website",
-            "is_active",
-            "is_opened",
-            "opening_time",
-            "closing_time",
-            "long",
-            "lat",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ["id", "created_at", "updated_at", "is_active"]
 
 
 # ===============================================
@@ -91,17 +64,17 @@ class PaymentSerializer(serializers.ModelSerializer):
 # ==============================================
 
 
-class BranchAgentSerializer(serializers.ModelSerializer):
-    branch = BranchSerializer(read_only=True)
-    branch_id = serializers.UUIDField(write_only=True)
+class AgentSerializer(serializers.ModelSerializer):
+    company = CompanySerializer(read_only=True)
+    company_id = serializers.UUIDField(write_only=True)
     user_id = serializers.UUIDField(write_only=True)
 
     class Meta:
-        model = BranchAgent
+        model = Agent
         fields = [
             "id",
-            "branch",
-            "branch_id",
+            "company",
+            "company_id",
             "user_id",
             "is_active",
             "created_at",
@@ -111,13 +84,13 @@ class BranchAgentSerializer(serializers.ModelSerializer):
 
 
 # ==============================================
-# BranchInfos Serializers
+# CompanyInfos Serializers
 # ==============================================
 
 
-class BranchSettingsSerializer(serializers.ModelSerializer):
+class CompanySettingsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = BranchSettings
+        model = CompanySettings
         fields = [
             "id",
             "is_voice_enabled",
@@ -132,13 +105,13 @@ class BranchSettingsSerializer(serializers.ModelSerializer):
 
 
 # ===============================================
-# Branch Infos Serializers
+# Company Infos Serializers
 # ==============================================
 
 
-class BranchInfosSerializer(serializers.ModelSerializer):
+class CompanyInfosSerializer(serializers.ModelSerializer):
     class Meta:
-        model = BranchInfos
+        model = CompanyInfos
         fields = [
             "id",
             "title",
@@ -155,13 +128,12 @@ class BranchInfosSerializer(serializers.ModelSerializer):
 
 
 class MarketingImageSerializer(serializers.ModelSerializer):
-    branch = BranchSerializer(read_only=True)
+    company = CompanySerializer(read_only=True)
 
     class Meta:
         model = MarketingImage
         fields = [
-            "branch",
-            "branch_id",
+            "company",
             "image",
             "title",
             "description",
@@ -177,13 +149,13 @@ class MarketingImageSerializer(serializers.ModelSerializer):
 
 
 class MarketingVideoSerializer(serializers.ModelSerializer):
-    branch = BranchSerializer(read_only=True)
+    company = CompanySerializer(read_only=True)
 
     class Meta:
         model = MarketingVideo
         fields = [
             "id",
-            "branch",
+            "company",
             "video",
             "title",
             "description",
@@ -199,14 +171,15 @@ class MarketingVideoSerializer(serializers.ModelSerializer):
 
 
 class ServiceSerializer(serializers.ModelSerializer):
-    branch = BranchSerializer(read_only=True)
+    company = CompanySerializer(read_only=True)
 
     class Meta:
         model = Service
         fields = [
             "id",
-            "branch",
+            "company",
             "name",
+            "code",
             "description",
             "is_active",
             "daily_limit",

@@ -15,20 +15,6 @@ class IsUserCompany(BasePermission):
         return obj.user == request.user
 
 
-class IsUserBranch(BasePermission):
-    """
-    Permission class to ensure that only the owner of the parent company can access the branch.
-    """
-
-    def has_permission(self, request, view):
-        """Check if the user is authenticated."""
-        return request.user.is_authenticated
-
-    def has_object_permission(self, request, view, obj):
-        """Check if the requesting user is the owner of the company that owns this branch."""
-        return obj.company.user == request.user
-
-
 class IsUserService(BasePermission):
     """
     Permission class to ensure that only the owner of the branch's company can access the service.
@@ -40,7 +26,7 @@ class IsUserService(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """Check if the requesting user owns the company connected to this service's branch."""
-        return obj.branch.company.user == request.user and obj.branch.is_active
+        return obj.company.user == request.user and obj.is_active
 
 
 class IsUserPayment(BasePermission):
@@ -54,7 +40,7 @@ class IsUserPayment(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """Check if the requesting user owns the company connected to this branch's payments."""
-        return obj.branch.company.user == request.user
+        return obj.company.user == request.user
 
 
 class IsUserOwner(BasePermission):
@@ -68,7 +54,7 @@ class IsUserOwner(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """Check if the requesting user is the owner of the company associated with the branch."""
-        return obj.branch.company.user == request.user
+        return obj.company.user == request.user
 
 
 class IsUserQueue(BasePermission):
@@ -85,23 +71,9 @@ class IsUserQueue(BasePermission):
         return obj.user == request.user
 
 
-class IsUserBranchAgent(BasePermission):
+class IsUserCompanyAgent(BasePermission):
     """
-    Permission class to ensure that only the user who created the branch agent can access it.
-    """
-
-    def has_permission(self, request, view):
-        """Check if the user is authenticated."""
-        return request.user.is_authenticated
-
-    def has_object_permission(self, request, view, obj):
-        """Check if the requesting user is the owner of the branch agent."""
-        return obj.user == request.user
-
-
-class IsBranchAgent(BasePermission):
-    """
-    Permission class to ensure that only the branch agent can access the branch.
+    Permission class to ensure that only the user who created the company agent can access it.
     """
 
     def has_permission(self, request, view):
@@ -109,5 +81,19 @@ class IsBranchAgent(BasePermission):
         return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        """Check if the requesting user is the owner of the branch agent."""
-        return obj.user == request.user
+        """Check if the requesting user is the owner of the company agent."""
+        return obj.company.user == request.user
+
+
+class IsCompanyAgent(BasePermission):
+    """
+    Permission class to ensure that only the company agent can access the branch.
+    """
+
+    def has_permission(self, request, view):
+        """Check if the user is authenticated."""
+        return request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        """Check if the requesting user is the owner of the company agent."""
+        return obj.company.user == request.user and obj.user == request.user

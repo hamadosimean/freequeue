@@ -17,7 +17,7 @@ The system is composed of several key layers:
 -   **AI Assistant:** Integrated LangChain-based assistant for intelligent customer interactions and automated support.
 
 ### 3. Data & Messaging Layer
--   **Primary Database:** PostgreSQL for structured, relational data (users, businesses, branches, queue entries).
+-   **Primary Database:** PostgreSQL for structured, relational data (users, companies, services, queue entries).
 -   **Cache & Broker:** Redis serves as both a high-speed cache and the message broker for Celery and Channels.
 -   **SMS Gateway:** Kannel (Bearerbox & Smsbox) provides a reliable interface for SMPP-based SMS delivery.
 
@@ -32,7 +32,7 @@ The system is composed of several key layers:
 ## System Components (Backend Apps)
 
 -   **`accounts`:** Manages user profiles, authentication (JWT/Djoser), and permission levels (Admin, Staff, Customer).
--   **`core`:** The heartbeat of the system, containing business logic for branches, services, service points, and the queue engine.
+-   **`core`:** The heartbeat of the system, containing business logic for companies, services, service points, and the queue engine.
 -   **`assistant`:** AI-powered module for automated interactions and local knowledge retrieval.
 -   **`stats`:** Aggregates data for business intelligence and operational reporting.
 -   **`general_settings`:** Centralized configuration management for application-wide parameters.
@@ -42,6 +42,6 @@ The system is composed of several key layers:
 1.  **Action:** A customer joins a queue via the Web/Mobile App.
 2.  **API Call:** The frontend sends a POST request to the Backend.
 3.  **Processing:** `core` app validates and creates a new QueueEntry in PostgreSQL.
-4.  **Broadcast:** Django Channels triggers a WebSocket broadcast to all connected clients in that branch's group.
+4.  **Broadcast:** Django Channels triggers a WebSocket broadcast to all connected clients in that service's group.
 5.  **UI Update:** The frontend receives the WebSocket message and updates the queue list in real-time without a page refresh.
 6.  **Background:** Celery sends an SMS notification to the customer confirming their position.

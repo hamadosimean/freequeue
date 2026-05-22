@@ -7,7 +7,7 @@ import { IoClose } from "react-icons/io5";
 if (typeof window !== "undefined") {
   Modal.setAppElement("#root");
 }
-
+ 
 const sizes = {
   sm: "max-w-md",
   md: "max-w-lg",

@@ -4,18 +4,18 @@ services:
   # ==========================
   db:
     image: postgres:17-alpine
-    container_name: freequeue_db
+    container_name: freequeues_db
     env_file:
       - .env
     expose:
       - "5432"
     restart: unless-stopped
     volumes:
-      - freequeue_db_data:/var/lib/postgresql/data
+      - freequeues_db_data:/var/lib/postgresql/data
     networks:
-      - freequeue_network
+      - freequeues_network
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "freequeue"]
+      test: ["CMD", "pg_isready", "-U", "freequeues"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,7 +25,7 @@ services:
   # ==========================
   redis:
     image: redis:alpine
-    container_name: freequeue_redis
+    container_name: freequeues_redis
     restart: unless-stopped
     env_file:
       - .env
@@ -33,9 +33,9 @@ services:
       - "6379"
     command: redis-server --requirepass ${REDIS_PASSWORD}
     volumes:
-      - freequeue_redis_data:/data
+      - freequeues_redis_data:/data
     networks:
-      - freequeue_network
+      - freequeues_network
     healthcheck:
       test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD} ping | grep PONG"]
       interval: 10s
@@ -48,15 +48,15 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
-    container_name: freequeue_backend
+    container_name: freequeues_backend
     env_file:
       - .env
     expose:
       - "8000"
     volumes:
       - ./backend:/app
-      - freequeue_static_volumes:/app/static
-      - freequeue_media_volumes:/app/media
+      - freequeues_static_volumes:/app/static
+      - freequeues_media_volumes:/app/media
     command: ["/app/entrypoint.sh"]
     depends_on:
       db:
@@ -72,8 +72,8 @@ services:
       retries: 5
 
     networks:
-      - freequeue_network
- 
+      - freequeues_network
+
   # ==========================
   # Celery Worker
   # ==========================
@@ -81,7 +81,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
-    container_name: freequeue_celery_worker
+    container_name: freequeues_celery_worker
     env_file:
       - .env
     volumes:
@@ -99,7 +99,7 @@ services:
       retries: 3
       start_period: 60s
     networks:
-      - freequeue_network
+      - freequeues_network
 
   # ==========================
   # Celery Beat
@@ -108,12 +108,12 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
-    container_name: freequeue_celery_beat
+    container_name: freequeues_celery_beat
     env_file:
       - .env
     volumes:
       - ./backend:/app
-      - freequeue_celerybeat_schedule:/app/celerybeat-schedule
+      - freequeues_celerybeat_schedule:/app/celerybeat-schedule
     depends_on:
       backend:
         condition: service_healthy
@@ -127,7 +127,7 @@ services:
       retries: 3
       start_period: 60s
     networks:
-      - freequeue_network
+      - freequeues_network
 
   # ----------------------------------------
   # Kannel Bearerbox (SMS Gateway Core)
@@ -137,7 +137,7 @@ services:
       context: ./backend/kannel
       dockerfile: Dockerfile
     hostname: bearerbox
-    container_name: freequeue_kannel_bearerbox
+    container_name: freequeues_kannel_bearerbox
     env_file:
       - .env
     expose:
@@ -159,7 +159,7 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - freequeue_network
+      - freequeues_network
 
   # ----------------------------------------
   # Kannel Smsbox (SMS Gateway Interface)
@@ -168,7 +168,7 @@ services:
     build:
       context: ./backend/kannel
       dockerfile: Dockerfile
-    container_name: freequeue_kannel_smsbox
+    container_name: freequeues_kannel_smsbox
     env_file:
       - .env
     hostname: smsbox
@@ -193,7 +193,7 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - freequeue_network
+      - freequeues_network
   # ==========================
   # Nginx
   # ==========================
@@ -201,11 +201,11 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
-    container_name: freequeue_nginx
+    container_name: freequeues_nginx
     restart: unless-stopped
     volumes:
-      - freequeue_static_volumes:/app/static
-      - freequeue_media_volumes:/app/media
+      - freequeues_static_volumes:/app/static
+      - freequeues_media_volumes:/app/media
     ports:
       - "${APP_PORT}:80"
     depends_on:
@@ -216,20 +216,20 @@ services:
       celery_beat:
         condition: service_healthy
     networks:
-      - freequeue_network
+      - freequeues_network
 
   # ----------------------------------------
   # Prometheus
   # ----------------------------------------
   prometheus:
     image: prom/prometheus
-    container_name: freequeue_prometheus
+    container_name: freequeues_prometheus
     volumes:
       - ./backend/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090"
     networks:
-      - freequeue_network
+      - freequeues_network
     depends_on:
       backend:
         condition: service_started
@@ -238,14 +238,14 @@ services:
   # ----------------------------------------
   grafana:
     image: grafana/grafana
-    container_name: freequeue_grafana
+    container_name: freequeues_grafana
     ports:
       - "${GRAFANA_PORT}:3000"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./backend/grafana/provisioning:/etc/grafana/provisioning
     networks:
-      - freequeue_network
+      - freequeues_network
 
     depends_on:
       prometheus:
@@ -254,16 +254,16 @@ services:
 # Volumes
 # ==========================
 volumes:
-  freequeue_db_data:
-  freequeue_redis_data:
-  freequeue_media_volumes:
-  freequeue_static_volumes:
-  freequeue_celerybeat_schedule:
+  freequeues_db_data:
+  freequeues_redis_data:
+  freequeues_media_volumes:
+  freequeues_static_volumes:
+  freequeues_celerybeat_schedule:
   grafana_data:
 
 # ==========================
 # Networks
 # ==========================
 networks:
-  freequeue_network:
+  freequeues_network:
     driver: bridge

@@ -19,7 +19,7 @@ FreeQueues is built for a wide range of service-oriented organizations:
 
 ## Key Principles
 
--   **Scalability:** Multi-branch support allows organizations to manage all locations from a single platform.
+-   **Scalability:** Multi-company support allows organizations to manage multiple entities from a single platform.
 -   **Real-time Interaction:** Powered by WebSockets for instantaneous status updates.
 -   **Integration Ready:** A robust REST API ensures compatibility with existing business systems.
 -   **Data-Driven:** Comprehensive analytics to identify bottlenecks and optimize service flow.

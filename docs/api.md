@@ -24,8 +24,8 @@ The system includes built-in interactive documentation powered by **drf-spectacu
 -   `POST /accounts/jwt/refresh/`: Refresh an expired token.
 
 ### 2. Business Management (`/core/`)
--   `GET /core/branches/`: List all business branches.
--   `GET /core/branches/{id}/services/`: List services offered at a specific branch.
+-   `GET /core/company`: List all companies.
+-   `GET /core/company/{id}/service`: List services offered by a specific company.
 -   `POST /core/service-points/`: Create or update counters.
 
 ### 3. Queue Operations (`/core/`)
@@ -34,8 +34,10 @@ The system includes built-in interactive documentation powered by **drf-spectacu
 -   `PATCH /core/queue-entries/{id}/`: Update status (e.g., staff calling a customer).
 
 ### 4. Real-time Notifications (WebSockets)
--   **Endpoint:** `/ws/queue/branch_{branch_id}/`
--   Connect to this socket to receive real-time updates for a specific branch's queue.
+-   **Endpoints:** 
+    - `/ws/core/queues/{queue_id}`
+    - `/ws/core/services/{service_id}/queues`
+-   Connect to these sockets to receive real-time updates for specific queues and services.
 
 ## Error Handling
 

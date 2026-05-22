@@ -72,108 +72,44 @@ class Company(TimeStampedModel):
         ]
 
 
-# ======================================
-# branch model
-# ======================================
-class Branch(TimeStampedModel):
-    id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID")
-    )
+
+
+# ============================================
+# Company Agents
+# ============================================
+
+
+class Agent(TimeStampedModel):
     company = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
-        related_name="branch",
+        related_name="agent",
         verbose_name=_("Company"),
-    )
-    name = models.CharField(max_length=100, verbose_name=_("Name"))
-    description = models.TextField(blank=True, null=True, verbose_name=_("Description"))
-    address = models.CharField(
-        max_length=255, blank=True, null=True, verbose_name=_("Address")
-    )
-    phone_number = models.CharField(
-        max_length=20, blank=True, null=True, verbose_name=_("Phone number")
-    )
-    email = models.EmailField(blank=True, null=True, verbose_name=_("Email"))
-    website = models.URLField(blank=True, null=True, verbose_name=_("Website"))
-    is_active = models.BooleanField(default=False, verbose_name=_("Is active"))
-    is_opened = models.BooleanField(default=True, verbose_name=_("Is opened"))
-    opening_time = models.TimeField(
-        blank=True, null=True, verbose_name=_("Opening time")
-    )
-    closing_time = models.TimeField(
-        blank=True, null=True, verbose_name=_("Closing time")
-    )
-    long = models.DecimalField(
-        max_digits=10,
-        decimal_places=6,
-        blank=True,
-        null=True,
-        verbose_name=_("Longitude"),
-    )
-    lat = models.DecimalField(
-        max_digits=10,
-        decimal_places=6,
-        blank=True,
-        null=True,
-        verbose_name=_("Latitude"),
-    )
-
-    def __str__(self):
-        return self.company.user.get_full_name() + " - " + self.name
-
-    class Meta:
-        verbose_name = "Branch"
-        verbose_name_plural = "Branches"
-        ordering = ["-created_at"]
-        indexes = [
-            models.Index(fields=["name"]),
-            models.Index(fields=["company"]),
-            models.Index(fields=["is_opened"]),
-        ]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["company", "name"],
-                name="unique_branch_name",
-            ),
-        ]
-
-
-# ============================================
-# Branch Agents
-# ============================================
-
-
-class BranchAgent(TimeStampedModel):
-    branch = models.ForeignKey(
-        Branch,
-        on_delete=models.CASCADE,
-        related_name="branch_agent",
-        verbose_name=_("Branch"),
     )
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="branch_agent",
+        related_name="agent",
         verbose_name=_("User"),
     )
     is_active = models.BooleanField(default=True, verbose_name=_("Is active"))
 
     def __str__(self):
-        return self.branch.name + " - " + self.user.get_full_name()
+        return self.company.name + " - " + self.user.get_full_name()
 
     class Meta:
-        verbose_name = "Branch Agent"
-        verbose_name_plural = "Branch Agents"
+        verbose_name = "Agent"
+        verbose_name_plural = "Agents"
         ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=["branch"]),
+            models.Index(fields=["company"]),
             models.Index(fields=["user"]),
             models.Index(fields=["is_active"]),
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["branch", "user"],
-                name="unique_branch_agent",
+                fields=["company", "user"],
+                name="unique_agent",
             ),
         ]
 
@@ -185,11 +121,11 @@ class Payment(TimeStampedModel):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID")
     )
-    branch = models.ForeignKey(
-        Branch,
+    company = models.ForeignKey(
+        Company,
         on_delete=models.CASCADE,
         related_name="payment",
-        verbose_name=_("Branch"),
+        verbose_name=_("Company"),
     )
     amount = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.0, verbose_name=_("Amount")
@@ -213,7 +149,7 @@ class Payment(TimeStampedModel):
     )
 
     def __str__(self):
-        return self.branch.name + " - " + self.transaction_id
+        return self.company.name + " - " + self.transaction_id
 
     class Meta:
         verbose_name = "Payment"
@@ -221,11 +157,11 @@ class Payment(TimeStampedModel):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["status"]),
-            models.Index(fields=["branch"]),
+            models.Index(fields=["company"]),
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["branch", "transaction_id"],
+                fields=["company", "transaction_id"],
                 name="unique_transaction",
             ),
             models.CheckConstraint(
@@ -236,17 +172,17 @@ class Payment(TimeStampedModel):
 
 
 # =======================================
-# Branch settings model
+# Company settings model
 # ========================================
-class BranchSettings(TimeStampedModel):
+class CompanySettings(TimeStampedModel):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID")
     )
-    branch = models.OneToOneField(
-        Branch,
+    company = models.OneToOneField(
+        Company,
         on_delete=models.CASCADE,
         related_name="setting",
-        verbose_name=_("Branch"),
+        verbose_name=_("Company"),
     )
     is_voice_enabled = models.BooleanField(
         default=True, verbose_name=_("Voice enabled")
@@ -261,49 +197,49 @@ class BranchSettings(TimeStampedModel):
     screen_mode = models.CharField(
         max_length=20,
         choices=SCREEN_MODE,
-        default="dark",
+        default="1",
         verbose_name=_("Screen mode"),
     )
     show_info = models.BooleanField(default=True, verbose_name=_("Show info"))
 
     def __str__(self):
-        return self.branch.name + " - " + self.screen_mode
+        return self.company.name + " - " + self.screen_mode
 
     class Meta:
-        verbose_name = "Branch Settings"
-        verbose_name_plural = "Branch Settings"
+        verbose_name = "Company Settings"
+        verbose_name_plural = "Company Settings"
         ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=["branch"]),
+            models.Index(fields=["company"]),
         ]
 
 
 # ======================================
-# Branch Infos model
+# Company Infos model
 # ======================================
-class BranchInfos(TimeStampedModel):
+class CompanyInfos(TimeStampedModel):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID")
     )
-    branch = models.OneToOneField(
-        Branch,
+    company = models.OneToOneField(
+        Company,
         on_delete=models.CASCADE,
         related_name="infos",
-        verbose_name=_("Branch"),
+        verbose_name=_("Company"),
     )
     title = models.CharField(max_length=500, verbose_name=_("Title"))
     description = models.TextField(blank=True, null=True, verbose_name=_("Description"))
 
     def __str__(self):
-        return self.branch.name + " - " + self.title
+        return self.company.name + " - " + self.title
 
     class Meta:
-        verbose_name = "Branch Info"
-        verbose_name_plural = "Branch Infos"
+        verbose_name = "Company Info"
+        verbose_name_plural = "Company Infos"
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["title"]),
-            models.Index(fields=["branch"]),
+            models.Index(fields=["company"]),
         ]
 
 
@@ -311,11 +247,11 @@ class MarketingImage(TimeStampedModel):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID")
     )
-    branch = models.ForeignKey(
-        Branch,
+    company = models.ForeignKey(
+        Company,
         on_delete=models.CASCADE,
         related_name="image",
-        verbose_name=_("Branch"),
+        verbose_name=_("Company"),
     )
     image = models.ImageField(upload_to="marketing_images/", verbose_name=_("Image"))
     title = models.CharField(
@@ -324,7 +260,7 @@ class MarketingImage(TimeStampedModel):
     description = models.TextField(blank=True, null=True, verbose_name=_("Description"))
 
     def __str__(self):
-        return self.branch.name + " - " + self.title
+        return self.company.name + " - " + self.title
 
     class Meta:
         verbose_name = "Marketing Image"
@@ -332,12 +268,12 @@ class MarketingImage(TimeStampedModel):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["title"]),
-            models.Index(fields=["branch"]),
+            models.Index(fields=["company"]),
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["branch", "title"],
-                name="unique_marketing_image_branch_title",
+                fields=["company", "title"],
+                name="unique_marketing_image_company_title",
             ),
         ]
 
@@ -349,18 +285,18 @@ class MarketingVideo(TimeStampedModel):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID")
     )
-    branch = models.ForeignKey(
-        Branch,
+    company = models.ForeignKey(
+        Company,
         on_delete=models.CASCADE,
         related_name="video",
-        verbose_name=_("Branch"),
+        verbose_name=_("Company"),
     )
     title = models.CharField(max_length=100, verbose_name=_("Title"))
     description = models.TextField(blank=True, null=True, verbose_name=_("Description"))
     video = models.FileField(upload_to="videos/", verbose_name=_("Video"))
 
     def __str__(self):
-        return self.branch.name + " - " + self.title
+        return self.company.name + " - " + self.title
 
     class Meta:
         verbose_name = "Marketing Video"
@@ -368,12 +304,12 @@ class MarketingVideo(TimeStampedModel):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["title"]),
-            models.Index(fields=["branch"]),
+            models.Index(fields=["company"]),
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["branch", "title"],
-                name="unique_marketing_video_branch_title",
+                fields=["company", "title"],
+                name="unique_marketing_video_company_title",
             ),
         ]
 
@@ -385,13 +321,15 @@ class Service(TimeStampedModel):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID")
     )
-    branch = models.ForeignKey(
-        Branch,
+    company = models.ForeignKey(
+        Company,
         on_delete=models.CASCADE,
         related_name="service",
-        verbose_name=_("Branch"),
+        verbose_name=_("Company"),
     )
     name = models.CharField(max_length=100, verbose_name=_("Name"))
+    # TODO: add code service that will be use for generate ticket
+    code = models.CharField(max_length=10, verbose_name=_("Code"), unique=True)
     description = models.TextField(blank=True, null=True, verbose_name=_("Description"))
     daily_limit = models.IntegerField(default=2000, verbose_name=_("Daily limit"))
     waiting_time = models.IntegerField(
@@ -400,7 +338,7 @@ class Service(TimeStampedModel):
     is_active = models.BooleanField(default=True, verbose_name=_("Is active"))
 
     def __str__(self):
-        return self.branch.name + " - " + self.name
+        return self.company.name + " - " + self.name
 
     class Meta:
         verbose_name = "Service"
@@ -408,12 +346,16 @@ class Service(TimeStampedModel):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["name"]),
-            models.Index(fields=["branch"]),
+            models.Index(fields=["company"]),
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["branch", "name"],
-                name="unique_service_branch_name",
+                fields=["company", "name"],
+                name="unique_service_company_name",
+            ),
+            models.UniqueConstraint(
+                fields=["code"],
+                name="unique_service_code",
             ),
         ]
 
