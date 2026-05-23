@@ -17,7 +17,7 @@ class IsUserCompany(BasePermission):
 
 class IsUserService(BasePermission):
     """
-    Permission class to ensure that only the owner of the branch's company can access the service.
+    Permission class to ensure that only the owner of the company can access the service.
     """
 
     def has_permission(self, request, view):
@@ -25,13 +25,13 @@ class IsUserService(BasePermission):
         return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        """Check if the requesting user owns the company connected to this service's branch."""
+        """Check if the requesting user owns the company connected to this service."""
         return obj.company.user == request.user and obj.is_active
 
 
 class IsUserPayment(BasePermission):
     """
-    Permission class to ensure that only the owner of the branch's company can access payment records.
+    Permission class to ensure that only the owner of the company can access payment records.
     """
 
     def has_permission(self, request, view):
@@ -39,13 +39,13 @@ class IsUserPayment(BasePermission):
         return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        """Check if the requesting user owns the company connected to this branch's payments."""
+        """Check if the requesting user owns the company connected to this payment's company."""
         return obj.company.user == request.user
 
 
 class IsUserOwner(BasePermission):
     """
-    Generic permission class to ensure the user owns the related branch's company.
+    Generic permission class to ensure the user owns the related company.
     """
 
     def has_permission(self, request, view):
@@ -53,7 +53,7 @@ class IsUserOwner(BasePermission):
         return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        """Check if the requesting user is the owner of the company associated with the branch."""
+        """Check if the requesting user is the owner of the company associated with the object."""
         return obj.company.user == request.user
 
 

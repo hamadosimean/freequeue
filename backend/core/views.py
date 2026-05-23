@@ -66,10 +66,24 @@ class CompanyAPIView(APIView):
 
     def post(self, request):
         serializer = CompanySerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        with transaction.atomic():
+            if serializer.is_valid(raise_exception=True):
+                company = serializer.save(user=request.user)
+
+                # Create payment for company
+                Payment.objects.create(company=company)
+
+                # Create company infos for company
+                CompanyInfos.objects.create(
+                    company=company,
+                    title=f"Welcome to {company.name}. Make sure to get your ticket before settling in. We appreciate your patience...",
+                )
+
+                # Create company settings for company
+                CompanySettings.objects.create(company=company)
+
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CompanyDetailAPIView(APIView):
@@ -120,8 +134,6 @@ class CompanyDetailAPIView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
-
 # ===================================================================
 # Agent company api view
 # ==================================================================
@@ -152,9 +164,7 @@ class RemoveCompanyAgentAPIView(APIView):
     throttle_classes = [UserRateThrottle]
 
     def delete(self, request, company_id, user_id):
-        agent = Agent.objects.filter(
-            user_id=user_id, company_id=company_id
-        ).first()
+        agent = Agent.objects.filter(user_id=user_id, company_id=company_id).first()
         if not agent:
             return Response(status=status.HTTP_404_NOT_FOUND)
         agent.delete()
@@ -219,7 +229,9 @@ class PaymentDetailAPIView(APIView):
         )
         payment = cache.get(cache_key)
         if not payment:
-            payment = Payment.objects.filter(id=payment_id, company_id=company_id).first()
+            payment = Payment.objects.filter(
+                id=payment_id, company_id=company_id
+            ).first()
             cache.set(cache_key, payment, timeout=CACHE_TIMEOUT_MINUTES * 60)
         if not payment:
             return Response(
@@ -277,7 +289,9 @@ class CompanySettingsAPIView(APIView):
         cache_key = f"company_settings:{company_id}:user:{self.request.user.id}"
         company_settings = cache.get(cache_key)
         if not company_settings:
-            company_settings = CompanySettings.objects.filter(company_id=company_id).first()
+            company_settings = CompanySettings.objects.filter(
+                company_id=company_id
+            ).first()
             cache.set(cache_key, company_settings, timeout=CACHE_TIMEOUT_MINUTES * 60)
         self.check_object_permissions(self.request, company_settings)
         return company_settings
@@ -289,7 +303,9 @@ class CompanySettingsAPIView(APIView):
 
     def patch(self, request, company_id):
         company_settings = self.get_object(company_id)
-        serializer = CompanySettingsSerializer(company_settings, data=request.data, partial=True)
+        serializer = CompanySettingsSerializer(
+            company_settings, data=request.data, partial=True
+        )
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

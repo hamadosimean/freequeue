@@ -51,7 +51,28 @@ class Company(TimeStampedModel):
     )
     email = models.EmailField(blank=True, null=True, verbose_name=_("Email"))
     website = models.URLField(blank=True, null=True, verbose_name=_("Website"))
-    is_active = models.BooleanField(default=True, verbose_name=_("Is active"))
+    is_active = models.BooleanField(default=False, verbose_name=_("Is active"))
+    is_opened = models.BooleanField(default=True, verbose_name=_("Is opened"))
+    opening_time = models.TimeField(
+        blank=True, null=True, verbose_name=_("Opening time")
+    )
+    closing_time = models.TimeField(
+        blank=True, null=True, verbose_name=_("Closing time")
+    )
+    long = models.DecimalField(
+        max_digits=10,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        verbose_name=_("Longitude"),
+    )
+    lat = models.DecimalField(
+        max_digits=10,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        verbose_name=_("Latitude"),
+    )
 
     def __str__(self):
         return self.user.get_full_name() + " - " + self.name
@@ -70,8 +91,6 @@ class Company(TimeStampedModel):
                 name="unique_company_name",
             ),
         ]
-
-
 
 
 # ============================================
@@ -190,7 +209,7 @@ class CompanySettings(TimeStampedModel):
     voice_style = models.CharField(
         max_length=20,
         choices=VOICE_STYLE,
-        default="natural",
+        default="female",
         verbose_name=_("Voice style"),
     )
     allow_remote = models.BooleanField(default=True, verbose_name=_("Allow remote"))
@@ -328,7 +347,6 @@ class Service(TimeStampedModel):
         verbose_name=_("Company"),
     )
     name = models.CharField(max_length=100, verbose_name=_("Name"))
-    # TODO: add code service that will be use for generate ticket
     code = models.CharField(max_length=10, verbose_name=_("Code"), unique=True)
     description = models.TextField(blank=True, null=True, verbose_name=_("Description"))
     daily_limit = models.IntegerField(default=2000, verbose_name=_("Daily limit"))

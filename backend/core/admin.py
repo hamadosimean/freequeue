@@ -16,8 +16,17 @@ from .models import (
 
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ["name", "domain", "is_active"]
-    list_filter = ["domain", "is_active"]
+    list_display = [
+        "name",
+        "domain",
+        "is_active",
+        "is_opened",
+        "opening_time",
+        "closing_time",
+        "long",
+        "lat",
+    ]
+    list_filter = ["domain", "is_active", "is_opened"]
     search_fields = ["name", "description"]
     ordering = ["-created_at"]
 
@@ -27,9 +36,9 @@ class AgentAdmin(admin.ModelAdmin):
     list_display = ["user__email", "is_active"]
     list_filter = ["user__email", "is_active"]
     search_fields = ["user__email"]
-    ordering = ["-created_at"]  
+    ordering = ["-created_at"]
     search_fields = ["company__name", "user__email"]
-    ordering = ["-created_at"]  
+    ordering = ["-created_at"]
 
 
 @admin.register(Payment)
@@ -100,6 +109,7 @@ class ServiceAdmin(admin.ModelAdmin):
         "id",
         "company",
         "name",
+        "code",
         "daily_limit",
         "waiting_time",
         "is_active",

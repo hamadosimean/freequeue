@@ -7,7 +7,7 @@ APP_DESCRIPTION = (
 APP_AUTHOR = "Hamado Simean"
 
 # Cache settings
-CACHE_TIMEOUT_MINUTES = 5
+CACHE_TIMEOUT_MINUTES = 1
 
 # OTP settings
 OTP_EXPIRATION_TIME = 60

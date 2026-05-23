@@ -30,12 +30,15 @@ class CompanySerializer(serializers.ModelSerializer):
             "email",
             "website",
             "is_active",
+            "is_opened",
+            "opening_time",
+            "closing_time",
+            "long",
+            "lat",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "is_active"]
-
-
+        read_only_fields = ["id", "created_at", "updated_at", "is_active", "is_opened"]
 
 
 # ===============================================
